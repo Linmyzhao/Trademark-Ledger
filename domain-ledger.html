@@ -375,6 +375,7 @@
       <button class="btn btn-primary" onclick="openForm()">编辑</button>
       <button class="btn btn-danger" onclick="doDelete()">删除</button>
       <button class="btn" onclick="openImportRegForm()">导入</button>
+      <button class="btn" onclick="importUpdateDomain()">导入更新</button>
       <button class="btn" onclick="toast('开始【导出】')">导出</button>
     </div>
 
@@ -1571,6 +1572,33 @@
       refreshList();
       closeImportRegForm();
       toast(`导入成功，新增域名 ${domain}`);
+    }
+
+    function importUpdateDomain() {
+      // 原型演示：按域名匹配已有管理记录并刷新注册/更新信息
+      let updated = 0;
+      rows.forEach((r, idx) => {
+        if (r.bucket !== "manage" || !r.domain) return;
+        if (r.domain === "sodial.com" || r.domain === "xingyun.cn") {
+          const expireDate = r.expireDate || "2027-11-16";
+          rows[idx] = {
+            ...r,
+            registrar: r.registrar || "阿里云",
+            expireDate,
+            warnDate: calcWarnDate(expireDate),
+            usage: r.usage ? `${r.usage}（导入更新）` : "导入更新",
+            updater: CURRENT_USER,
+            updateTime: NOW
+          };
+          updated++;
+        }
+      });
+      if (!updated) {
+        toast("没有可匹配更新的记录（演示按域名匹配）");
+        return;
+      }
+      refreshList();
+      toast(`导入更新成功，已更新 ${updated} 条`);
     }
 
     function viewRow(id) {

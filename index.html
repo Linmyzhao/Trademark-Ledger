@@ -1070,6 +1070,7 @@
       <div class="toolbar" id="toolbarManage" style="display:none">
         <button class="btn btn-primary" type="button" id="btnManageEdit">编辑</button>
         <button class="btn btn-default" type="button" id="btnManageImport">导入</button>
+        <button class="btn btn-default" type="button" id="btnManageImportUpdate">导入更新</button>
         <button class="btn btn-default" type="button" id="btnManageExport">导出</button>
       </div>
 
@@ -2529,6 +2530,30 @@
     $("#btnImport").addEventListener("click", () => toast("原型示意：导入功能待接入", "ok"));
     $("#btnExport").addEventListener("click", () => toast("原型示意：已导出当前筛选结果", "ok"));
     $("#btnManageImport").addEventListener("click", () => toast("原型示意：导入功能待接入", "ok"));
+    $("#btnManageImportUpdate").addEventListener("click", () => {
+      // 原型演示：按邮箱匹配已开通记录并刷新更新信息
+      const now = nowDateTime();
+      let updated = 0;
+      records.forEach((r, idx) => {
+        if (r.applyStatus !== "已开通" || !r.email) return;
+        if (r.email.includes("@sodial.com") || r.email.includes("@xingyun")) {
+          records[idx] = {
+            ...r,
+            remark: r.remark ? `${r.remark}（导入更新）` : "导入更新",
+            maintainer: "管理员",
+            updatedAt: now
+          };
+          updated++;
+        }
+      });
+      if (!updated) {
+        toast("没有可匹配更新的记录（演示按邮箱匹配）", "err");
+        return;
+      }
+      saveStore();
+      renderTable();
+      toast(`导入更新成功，已更新 ${updated} 条`, "ok");
+    });
     $("#btnManageExport").addEventListener("click", () => toast("原型示意：已导出当前筛选结果", "ok"));
 
     let pendingImportRows = [];

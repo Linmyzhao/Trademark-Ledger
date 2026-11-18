@@ -503,6 +503,7 @@
       <button class="btn btn-primary" onclick="openEditForm()">编辑</button>
       <button class="btn btn-danger" onclick="requireSelect('删除')">删除</button>
       <button class="btn" onclick="toast('打开【导入】对话框')">导入</button>
+      <button class="btn" onclick="importUpdateBrand()">导入更新</button>
       <button class="btn" onclick="toast('开始【导出】')">导出</button>
       <button class="btn btn-ghost-teal" onclick="openUpload('受理回执')">上传受理回执</button>
       <button class="btn btn-ghost-teal" onclick="openUpload('证书')">上传证书</button>
@@ -1070,6 +1071,30 @@
     }
 
     let uploadKind = "";
+
+    function importUpdateBrand() {
+      // 原型演示：按品牌编码匹配已有记录并刷新更新信息
+      const now = "2026-11-18 11:30:00";
+      let updated = 0;
+      rows.forEach((r, idx) => {
+        if (!r.brandCode) return;
+        if (r.brandCode === "CN2024031201" || r.brandCode === "EU2025061802") {
+          rows[idx] = {
+            ...r,
+            remark: r.remark ? `${r.remark}（导入更新）` : "导入更新",
+            updater: currentUser.name,
+            updateTime: now
+          };
+          updated++;
+        }
+      });
+      if (!updated) {
+        toast("没有可匹配更新的记录（演示按品牌编码匹配）");
+        return;
+      }
+      render();
+      toast(`导入更新成功，已更新 ${updated} 条`);
+    }
 
     function toast(msg) {
       const el = document.getElementById("toast");

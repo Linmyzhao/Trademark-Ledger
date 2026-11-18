@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>域名 / 邮箱管理 - 交互原型</title>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --card: #fff;
+      --border: #e5e7eb;
+      --header: #e8eef5;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #1677ff;
+      --danger: #ff4d4f;
+      --ok: #52c41a;
+      --warn-bg: #fffbe6;
+      --warn-border: #ffe58f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+    }
+    .page { padding: 10px 12px 16px; }
+    .title { font-size: 17px; font-weight: 600; margin: 0 0 8px; }
+    .menu-tabs {
+      display: flex; gap: 0; margin-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      border-radius: 6px 6px 0 0;
+      overflow: hidden;
+    }
+    .menu-tab {
+      border: none; background: transparent; color: var(--muted);
+      height: 40px; padding: 0 20px; cursor: pointer; font-size: 14px;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+    }
+    .menu-tab:hover { color: var(--primary); }
+    .menu-tab.active {
+      color: var(--primary); font-weight: 600;
+      border-bottom-color: var(--primary);
+    }
+    .filters {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+    }
+    .filters-row {
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    }
+    .filters select,
+    .filters input[type="text"],
+    .filters input[type="date"] {
+      height: 30px;
+      border: 1px solid #d9d9d9;
+      border-radius: 15px;
+      padding: 0 10px;
+      outline: none;
+      background: #fff;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .filters select:focus,
+    .filters input:focus { border-color: var(--primary); }
+    .filters select { min-width: 110px; max-width: 140px; }
+    .date-range {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      height: 30px;
+      width: 200px;
+      border: 1px solid #d9d9d9;
+      border-radius: 15px;
+      padding: 0 12px;
+      background: #fff;
+      color: #bfbfbf;
+      cursor: pointer;
+      user-select: none;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .date-range.has-value { color: var(--text); }
+    .date-range input[type="date"] {
+      position: absolute;
+      top: 0; bottom: 0;
+      opacity: 0;
+      width: 50%;
+      height: 100%;
+      cursor: pointer;
+      border: none !important;
+      padding: 0 !important;
+      margin: 0;
+    }
+    .date-range #fStart { left: 0; }
+    .date-range #fEnd { left: 50%; }
+    .date-range .range-text {
+      pointer-events: none;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+    .combo-search {
+      display: inline-flex; align-items: stretch; height: 30px;
+      border: 1px solid #d9d9d9; border-radius: 15px; overflow: hidden; background: #fff;
+    }
+    .combo-search:focus-within { border-color: var(--primary); }
+    .combo-search select {
+      height: 100% !important; min-width: 96px !important; max-width: 110px !important;
+      border: none !important; border-radius: 0 !important;
+      border-right: 1px solid #d9d9d9 !important; padding: 0 8px !important;
+      background: #fafafa; color: var(--muted);
+    }
+    .combo-search input {
+      height: 100% !important; width: 160px; border: none !important;
+      border-radius: 0 !important; padding: 0 10px !important;
+    }
+    .btn-pill { border-radius: 15px !important; height: 30px !important; }
+    .btn-link {
+      border: none; background: transparent; color: var(--muted);
+      cursor: pointer; height: 30px; padding: 0 8px; font-size: 13px;
+    }
+    .btn-link:hover { color: var(--primary); }
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+      margin-bottom: 8px; background: var(--card); padding: 8px 10px;
+      border-radius: 6px; border: 1px solid var(--border);
+    }
+    .btn {
+      border: 1px solid #d9d9d9; background: #fff; color: var(--text);
+      height: 28px; padding: 0 10px; border-radius: 4px;
+      cursor: pointer; font-size: 13px;
+    }
+    .btn:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-primary {
+      background: var(--primary); border-color: var(--primary); color: #fff;
+    }
+    .btn-primary:hover { background: #4096ff; color: #fff; }
+    .btn-danger { border-color: #ffa39e; color: var(--danger); }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 6px; overflow: auto; max-height: calc(100vh - 200px);
+    }
+    table {
+      width: 100%; border-collapse: collapse; table-layout: fixed;
+    }
+    th {
+      background: var(--header); font-weight: 600; text-align: left;
+      padding: 6px 8px; border-bottom: 1px solid #d9d9d9;
+      border-right: 1px solid #d9d9d9; white-space: nowrap;
+      position: sticky; top: 0; z-index: 1; font-size: 13px;
+    }
+    th:last-child, td:last-child { border-right: none; }
+    td {
+      padding: 6px 8px; border-bottom: 1px solid #d9d9d9;
+      border-right: 1px solid #d9d9d9; vertical-align: top; background: #fff;
+    }
+    tr:hover td { background: #f5f8fc; }
+    tr.stale td { background: var(--warn-bg); }
+    tr.stale:hover td { background: #fff7cc; }
+    th.check, td.check {
+      width: 36px; text-align: center; vertical-align: middle; padding: 0;
+    }
+    .check input { margin: 0; cursor: pointer; width: 13px; height: 13px; }
+    .kv { line-height: 1.5; overflow: hidden; }
+    .kv > div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .kv .label { color: var(--muted); }
+    .kv .val { color: var(--text); }
+    .tag {
+      display: inline-block; padding: 0 6px; height: 20px; line-height: 20px;
+      border-radius: 3px; font-size: 12px;
+    }
+    .tag-green { background: #f6ffed; color: var(--ok); border: 1px solid #b7eb8f; }
+    .tag-orange { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+    .tag-blue { background: #e6f4ff; color: var(--primary); border: 1px solid #91caff; }
+    .tag-gray { background: #fafafa; color: #595959; border: 1px solid #d9d9d9; }
+    .tag-red { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+    .domain-link { color: var(--primary); font-weight: 600; text-decoration: none; }
+    .domain-link:hover { text-decoration: underline; }
+    .muted { color: var(--muted); }
+    .pager {
+      display: flex; justify-content: flex-end; align-items: center;
+      gap: 6px; padding: 6px 10px; color: var(--muted); background: #fff;
+      border-top: 1px solid var(--border); position: sticky; bottom: 0; font-size: 13px;
+    }
+    .toast {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,.78); color: #fff; padding: 10px 18px;
+      border-radius: 6px; display: none; z-index: 99;
+    }
+    .modal-mask {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      display: none; align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal-mask.show { display: flex; }
+    .modal {
+      background: #fff; width: 420px; max-width: 92vw;
+      border-radius: 8px; padding: 20px 24px;
+    }
+    .modal h3 { margin: 0 0 12px; font-size: 16px; }
+    .modal p { margin: 0 0 16px; color: var(--muted); line-height: 1.6; }
+    .modal .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+    .radio-group {
+      display: inline-flex; align-items: center; gap: 40px;
+      height: 32px; flex-wrap: nowrap; white-space: nowrap;
+    }
+    .radio-group label {
+      display: inline-flex; align-items: center; gap: 6px;
+      cursor: pointer; font-size: 13px; color: var(--text);
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .radio-group input { margin: 0; cursor: pointer; }
+    .modal-add {
+      width: 920px; max-width: 96vw; max-height: 90vh;
+      display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 4px;
+    }
+    .modal-add .modal-hd {
+      padding: 12px 20px; border-bottom: 1px solid #f0f0f0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-add .modal-hd h3 {
+      margin: 0; font-size: 16px; font-weight: 600; color: var(--text);
+      border-left: 3px solid var(--primary); padding-left: 10px; line-height: 1.2;
+    }
+    .modal-add .modal-bd {
+      padding: 12px 24px 8px; overflow: auto; flex: 1; background: #fff;
+    }
+    .modal-add .modal-ft {
+      padding: 10px 20px; border-top: 1px solid #f0f0f0;
+      display: flex; justify-content: flex-end; gap: 8px; background: #fff;
+    }
+    .form-sec { margin-bottom: 16px; }
+    .form-sec h4 {
+      margin: 0 0 12px; font-size: 13px; font-weight: 600; color: var(--text);
+      border-left: 3px solid var(--primary); padding-left: 8px; line-height: 1.2;
+    }
+    .form-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      column-gap: 16px; row-gap: 14px;
+    }
+    .field {
+      display: grid; grid-template-columns: 88px 1fr;
+      align-items: center; gap: 6px; min-width: 0;
+    }
+    .field label {
+      font-size: 13px; color: var(--text); text-align: right; line-height: 1.3;
+    }
+    .field label .req { color: var(--danger); margin-right: 2px; }
+    .field input, .field select {
+      height: 32px; border: 1px solid #d9d9d9; border-radius: 6px;
+      padding: 0 11px; font-size: 13px; outline: none; background: #fff; width: 100%;
+      color: var(--text);
+    }
+    .field input:focus, .field select:focus {
+      border-color: var(--primary); box-shadow: 0 0 0 2px rgba(22,119,255,.12);
+    }
+    .field input:disabled, .field select:disabled {
+      background: #f5f5f5; color: var(--muted); cursor: not-allowed;
+    }
+    .hidden { display: none !important; }
+    .hint { font-size: 11px; color: var(--muted); margin-top: 2px; grid-column: 2; }
+    col.c-check { width: 36px; }
+    col.c-asset { width: 15%; }
+    col.c-tm { width: 16%; }
+    col.c-reg { width: 15%; }
+    col.c-risk { width: 14%; }
+    col.c-audit { width: 18%; }
+    col.c-maint { width: 14%; }
+    col.c-ops { width: 72px; }
+    td.ops { vertical-align: middle; white-space: nowrap; }
+    td.ops .link-btn {
+      border: none; background: none; color: var(--primary);
+      cursor: pointer; padding: 0; font-size: 13px; font-family: inherit;
+    }
+    td.ops .link-btn:hover { color: #4096ff; }
+    .sec-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .sec-hd h4 { margin: 0; }
+    .tm-table {
+      width: 100%; border-collapse: collapse; table-layout: fixed;
+    }
+    .tm-table th {
+      background: #fafafa; font-weight: 600; text-align: left;
+      padding: 8px; border: 1px solid #f0f0f0; position: static;
+    }
+    .tm-table td {
+      padding: 8px; border: 1px solid #f0f0f0; vertical-align: middle;
+    }
+    .tm-table select, .tm-table input {
+      height: 32px; width: 100%; border: 1px solid #d9d9d9; border-radius: 6px;
+      padding: 0 10px; font-size: 13px; outline: none; background: #fff;
+    }
+    .tm-table input:disabled {
+      background: #f5f5f5; color: var(--muted);
+    }
+    .tm-table .op { width: 72px; text-align: center; }
+    .tm-table .chk {
+      width: 44px; text-align: center; padding: 0;
+    }
+    .tm-table .chk input { width: 14px; height: 14px; cursor: pointer; }
+    .tm-table tbody tr { cursor: pointer; }
+    .tm-table tbody tr:hover td { background: #f5f8fc; }
+    .tm-table tbody tr.selected td { background: #e6f4ff; }
+    @media (max-width: 900px) {
+      .form-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="menu-tabs">
+      <button type="button" class="menu-tab active" id="tabRegister" onclick="switchMenu('register')">域名注册</button>
+      <button type="button" class="menu-tab" id="tabManage" onclick="switchMenu('manage')">域名管理</button>
+    </div>
+    <h1 class="title" id="pageTitle">域名注册</h1>
+
+    <div class="filters">
+      <div class="filters-row">
+        <select id="fDept" title="所属部门">
+          <option value="">所属部门</option>
+        </select>
+        <select id="fApplyStatus" title="申请状态" class="register-only">
+          <option value="">申请状态</option>
+        </select>
+        <select id="fExpireRange" title="到期窗口" class="manage-only">
+          <option value="">到期窗口</option>
+          <option value="30">30 天内到期</option>
+          <option value="stale">超 90 天未更新</option>
+        </select>
+        <select id="fTimeType" title="日期类型">
+          <option value="regDate" class="manage-only" selected>注册日期</option>
+          <option value="expireDate" class="manage-only">到期日期</option>
+          <option value="warnDate" class="manage-only">预警日</option>
+          <option value="createTime">创建日期</option>
+          <option value="updateTime">更新日期</option>
+        </select>
+        <div class="date-range" id="dateRangeBox" title="开始日期 - 结束日期">
+          <span class="range-text" id="dateRangeText">开始日期 - 结束日期</span>
+          <input type="date" id="fStart" />
+          <input type="date" id="fEnd" />
+        </div>
+        <div class="combo-search">
+          <select id="qField" title="搜索字段">
+            <option value="tmName" selected>商标名称</option>
+            <option value="brandCode">品牌编码</option>
+            <option value="domain" class="manage-only">域名</option>
+            <option value="domainId" class="manage-only">域名ID</option>
+            <option value="registrar" class="manage-only">注册商</option>
+          </select>
+          <input id="q" type="text" placeholder="请输入" />
+        </div>
+        <button class="btn btn-primary btn-pill" onclick="doSearch()">搜索</button>
+        <button class="btn-link" onclick="doClear()">清空</button>
+      </div>
+    </div>
+
+    <div class="toolbar" id="toolbarRegister">
+      <button class="btn btn-primary" onclick="openApplyForm()">申请注册</button>
+      <button class="btn" onclick="openEditForm()">编辑</button>
+      <button class="btn btn-danger" onclick="doDelete()">删除</button>
+      <button class="btn" onclick="openImportRegisterForm()">导入</button>
+      <button class="btn" onclick="toast('开始【导出】')">导出</button>
+      <button class="btn" onclick="openAudit('dept')">部门审核</button>
+      <button class="btn" onclick="openAudit('brand')">品牌营销部审核</button>
+    </div>
+
+    <div class="toolbar" id="toolbarManage" style="display:none;">
+      <button class="btn btn-primary" onclick="openForm()">编辑</button>
+      <button class="btn btn-danger" onclick="doDelete()">删除</button>
+      <button class="btn" onclick="openImportRegForm()">导入</button>
+      <button class="btn" onclick="toast('开始【导出】')">导出</button>
+    </div>
+
+    <div class="card">
+      <table id="listTable">
+        <colgroup id="listColgroup">
+          <col class="c-check" />
+          <col class="c-asset" />
+          <col class="c-tm" />
+          <col class="c-reg" />
+          <col class="c-risk" />
+          <col class="c-audit" />
+          <col class="c-maint" />
+          <col class="c-ops" />
+        </colgroup>
+        <thead>
+          <tr id="listHeadRow">
+            <th class="check"><input type="checkbox" id="checkAll" onchange="toggleAll(this.checked)" /></th>
+            <th>资产标识</th>
+            <th>商标归属</th>
+            <th>注册信息</th>
+            <th>状态与风险</th>
+            <th>审核信息</th>
+            <th>系统信息</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="pager" id="pager">共 0 条 · 每页 10 条 · 1 / 1</div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal-mask" id="confirmModal">
+    <div class="modal">
+      <h3 id="confirmTitle">确认删除</h3>
+      <p id="confirmDesc">确定删除选中的域名记录吗？（原型演示）</p>
+      <div class="actions">
+        <button class="btn" onclick="closeConfirm()">取消</button>
+        <button class="btn btn-primary" id="confirmOk">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="auditModal">
+    <div class="modal" style="width:480px;">
+      <h3 id="auditTitle">部门审核</h3>
+      <div class="form-grid" style="grid-template-columns:1fr; margin:16px 0 8px;">
+        <div class="field" style="grid-template-columns:88px 1fr;">
+          <label><span class="req">*</span>审核结果</label>
+          <div class="radio-group">
+            <label><input type="radio" name="auditResult" value="pass" checked /> 通过</label>
+            <label><input type="radio" name="auditResult" value="reject" /> 驳回</label>
+          </div>
+        </div>
+        <div class="field" style="grid-template-columns:88px 1fr; align-items:start;">
+          <label id="auditCommentLabel">驳回备注</label>
+          <textarea id="auditComment" rows="3" placeholder="驳回时必填" style="width:100%;resize:vertical;border:1px solid #d9d9d9;border-radius:6px;padding:8px 10px;font:inherit;outline:none;"></textarea>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="closeAudit()">取消</button>
+        <button class="btn btn-primary" onclick="confirmAudit()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="formModal">
+    <div class="modal modal-add">
+      <div class="modal-hd">
+        <h3 id="formTitle">注册域名</h3>
+        <button class="btn" onclick="closeForm()" title="关闭">×</button>
+      </div>
+      <div class="modal-bd">
+        <div class="form-sec">
+          <h4>资产标识</h4>
+          <div class="form-grid">
+            <div class="field">
+              <label><span class="req">*</span>域名</label>
+              <input id="fDomain" placeholder="如 sodial.com" />
+            </div>
+            <div class="field hidden" id="fieldDomainId">
+              <label>域名ID</label>
+              <input id="fDomainId" placeholder="YM+YYYYMMDD+流水" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-sec">
+          <h4>商标归属</h4>
+          <div class="form-grid">
+            <div class="field">
+              <label>品牌编码</label>
+              <input id="fBrandCode" placeholder="如 CN2019031201" />
+            </div>
+            <div class="field">
+              <label>商标名称</label>
+              <input id="fTmNameForm" disabled />
+            </div>
+            <div class="field">
+              <label>所属部门</label>
+              <input id="fDeptForm" disabled />
+            </div>
+            <div class="field" style="grid-column: 1 / -1; grid-template-columns: 88px 1fr;">
+              <label id="fUsageLabel">用途说明</label>
+              <input id="fUsage" placeholder="如官网 / 独立站 / 邮箱专用 / 品牌保护" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-sec">
+          <h4>注册信息</h4>
+          <div class="form-grid">
+            <div class="field">
+              <label><span class="req">*</span>注册商</label>
+              <select id="fRegistrarForm">
+                <option value="">请选择</option>
+                <option>阿里云</option>
+                <option>腾讯云</option>
+                <option>GoDaddy</option>
+                <option>Namecheap</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>注册日期</label>
+              <input id="fRegDate" type="date" />
+            </div>
+            <div class="field">
+              <label><span class="req">*</span>到期日期</label>
+              <input id="fExpireDate" type="date" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-sec">
+          <h4>状态与风险</h4>
+          <div class="form-grid">
+            <div class="field">
+              <label>预警日</label>
+              <input id="fWarnDate" type="date" disabled />
+              <div class="hint">系统默认：到期前 30 天自动计算</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn" onclick="closeForm()">取消</button>
+        <button class="btn btn-primary" onclick="confirmForm()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="importRegModal">
+    <div class="modal" style="width:560px;">
+      <h3>导入</h3>
+      <p>上传 Excel / CSV 批量导入域名管理数据。模板字段：域名、商标名称、品牌编码、所属部门、用途说明、注册商、注册日期、到期日期。导入后新增为「已注册」记录。</p>
+      <div class="form-grid" style="grid-template-columns:1fr; margin:12px 0;">
+        <div class="field" style="grid-template-columns:88px 1fr;">
+          <label><span class="req">*</span>上传文件</label>
+          <input id="importRegFile" type="file" accept=".xlsx,.xls,.csv" />
+        </div>
+      </div>
+      <div class="hint" style="margin:0 0 8px;display:block;">演示：可不选文件，直接确认将新增一条示例「已注册」记录。</div>
+      <div class="actions">
+        <button class="btn" onclick="closeImportRegForm()">取消</button>
+        <button class="btn" onclick="toast('开始下载【导入模板】')">下载模板</button>
+        <button class="btn btn-primary" onclick="confirmImportReg()">开始导入</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="applyModal">
+    <div class="modal modal-add">
+      <div class="modal-hd">
+        <h3>申请注册</h3>
+        <button class="btn" onclick="closeApplyForm()" title="关闭">×</button>
+      </div>
+      <div class="modal-bd">
+        <div class="form-sec">
+          <div class="sec-hd">
+            <h4>商标信息<span class="hint" style="margin:0 0 0 8px;display:inline;">勾选关联商标（可多选）</span></h4>
+          </div>
+          <div class="form-grid" style="margin-bottom: 12px;">
+            <div class="field" style="grid-column: 1 / -1; grid-template-columns: 88px 1fr;">
+              <label><span class="req">*</span>用途说明</label>
+              <input id="aUsage" placeholder="如官网 / 独立站 / 邮箱专用 / 品牌保护" />
+            </div>
+          </div>
+          <table class="tm-table">
+            <thead>
+              <tr>
+                <th class="chk"><input type="checkbox" id="tmCheckAll" onchange="toggleTmAll(this.checked)" title="全选" /></th>
+                <th>品牌编码</th>
+                <th>商标名称</th>
+                <th>所属部门</th>
+                <th>国别/地区</th>
+                <th>商标类别</th>
+                <th>商标类型</th>
+              </tr>
+            </thead>
+            <tbody id="tmRows"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn" onclick="closeApplyForm()">取消</button>
+        <button class="btn btn-primary" onclick="confirmApply()">提交申请</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="editModal">
+    <div class="modal modal-add">
+      <div class="modal-hd">
+        <h3>编辑</h3>
+        <button class="btn" onclick="closeEditForm()" title="关闭">×</button>
+      </div>
+      <div class="modal-bd">
+        <div class="form-sec">
+          <div class="sec-hd">
+            <h4>商标信息<span class="hint" style="margin:0 0 0 8px;display:inline;">回显当前关联商标（不可改）</span></h4>
+          </div>
+          <div class="form-grid" style="margin-bottom: 12px;">
+            <div class="field" style="grid-column: 1 / -1; grid-template-columns: 88px 1fr;">
+              <label><span class="req">*</span>用途说明</label>
+              <input id="eUsage" placeholder="如官网 / 独立站 / 邮箱专用 / 品牌保护" />
+            </div>
+          </div>
+          <table class="tm-table">
+            <thead>
+              <tr>
+                <th class="chk"></th>
+                <th>品牌编码</th>
+                <th>商标名称</th>
+                <th>所属部门</th>
+                <th>国别/地区</th>
+                <th>商标类别</th>
+                <th>商标类型</th>
+              </tr>
+            </thead>
+            <tbody id="editTmRows"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn" onclick="closeEditForm()">取消</button>
+        <button class="btn btn-primary" onclick="confirmEdit()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TODAY = "2026-11-16";
+    const NOW = "2026-11-16 14:30:00";
+    const CURRENT_USER = "李四";
+
+    const TM_MAP = {
+      "星云": { brandCode: "CN2020060101", dept: "品牌中心" },
+      "Sodial": { brandCode: "CN2019031201", dept: "跨境电商部" },
+      "凌云": { brandCode: "CN2018011501", dept: "市场营销部" },
+      "海纳": { brandCode: "CN2021090801", dept: "网络技术部" }
+    };
+
+    const BRAND_CODE_MAP = {
+      "CN2020060101": { tmName: "星云", dept: "品牌中心", region: "中国", niceClass: "第9类", tmType: "文字" },
+      "CN2019031201": { tmName: "Sodial", dept: "跨境电商部", region: "US", niceClass: "第25类", tmType: "组合" },
+      "CN2018011501": { tmName: "凌云", dept: "市场营销部", region: "中国", niceClass: "第35类", tmType: "文字" },
+      "CN2021090801": { tmName: "海纳", dept: "网络技术部", region: "EU", niceClass: "第42类", tmType: "图形" }
+    };
+
+    let rows = [
+      {
+        id: 1,
+        bucket: "manage",
+        domain: "sodial.com",
+        domainId: "YM2019031201",
+        tmName: "Sodial",
+        brandCode: "CN2019031201",
+        dept: "跨境电商部",
+        usage: "品牌官网",
+        registrar: "阿里云",
+        regDate: "2019-03-12",
+        expireDate: "2027-03-12",
+        confirmRegTime: "2019-03-12 09:20:15",
+        warnDate: "2027-02-10",
+        applyStatus: "已注册",
+        deptAuditor: "陈晨",
+        deptAuditTime: "2019-03-10",
+        brandAuditor: "周敏",
+        brandAuditTime: "2019-03-11",
+        rejectRemark: "",
+        creator: "张敏",
+        createTime: "2019-03-12 09:15:00",
+        updater: "李四",
+        updateTime: "2026-11-05 16:42:33"
+      },
+      {
+        id: 2,
+        bucket: "manage",
+        domain: "xingyun.cn",
+        domainId: "YM2020060101",
+        tmName: "星云",
+        brandCode: "CN2020060101",
+        dept: "品牌中心",
+        usage: "独立站",
+        registrar: "腾讯云",
+        regDate: "2020-06-01",
+        expireDate: "2026-12-01",
+        confirmRegTime: "2020-06-01 11:08:42",
+        warnDate: "2026-11-01",
+        applyStatus: "已注册",
+        deptAuditor: "王芳",
+        deptAuditTime: "2020-05-28",
+        brandAuditor: "周敏",
+        brandAuditTime: "2020-05-30",
+        rejectRemark: "",
+        creator: "王芳",
+        createTime: "2020-06-01 10:55:18",
+        updater: "王芳",
+        updateTime: "2026-10-20 09:12:05"
+      },
+      {
+        id: 3,
+        bucket: "manage",
+        domain: "",
+        domainId: "YM2018011501",
+        tmName: "凌云",
+        brandCode: "CN2018011501",
+        dept: "市场营销部",
+        usage: "邮箱专用",
+        registrar: "",
+        regDate: "",
+        expireDate: "",
+        confirmRegTime: "",
+        warnDate: "",
+        applyStatus: "待注册",
+        deptAuditor: "赵磊",
+        deptAuditTime: "2026-11-10",
+        brandAuditor: "周敏",
+        brandAuditTime: "2026-11-12",
+        rejectRemark: "",
+        creator: "赵磊",
+        createTime: "2026-11-08 14:22:10",
+        updater: "赵磊",
+        updateTime: "2026-11-12 17:05:48"
+      },
+      {
+        id: 4,
+        bucket: "register",
+        domain: "",
+        domainId: "YM2021090801",
+        tmName: "海纳",
+        brandCode: "CN2021090801",
+        dept: "网络技术部",
+        usage: "品牌保护",
+        registrar: "",
+        regDate: "",
+        expireDate: "",
+        confirmRegTime: "",
+        warnDate: "",
+        applyStatus: "待品牌营销部审核",
+        deptAuditor: "刘洋",
+        deptAuditTime: "2026-11-14",
+        brandAuditor: "",
+        brandAuditTime: "",
+        rejectRemark: "",
+        creator: "刘洋",
+        createTime: "2026-11-13 09:40:26",
+        updater: "刘洋",
+        updateTime: "2026-11-14 11:18:03"
+      },
+      {
+        id: 5,
+        bucket: "register",
+        domain: "",
+        domainId: "YM2022042001",
+        tmName: "Sodial",
+        brandCode: "CN2019031201",
+        dept: "跨境电商部",
+        usage: "独立站",
+        registrar: "",
+        regDate: "",
+        expireDate: "",
+        confirmRegTime: "",
+        warnDate: "",
+        applyStatus: "待部门审核",
+        deptAuditor: "",
+        deptAuditTime: "",
+        brandAuditor: "",
+        brandAuditTime: "",
+        rejectRemark: "",
+        creator: "张敏",
+        createTime: "2026-11-15 15:33:57",
+        updater: "张敏",
+        updateTime: "2026-11-15 15:33:57"
+      }
+    ];
+
+    let currentMenu = "register";
+    let filtered = [];
+    let formMode = "add";
+    let editingId = null;
+    let nextId = 6;
+
+    const STATUS_BY_MENU = {
+      register: ["待部门审核", "待品牌营销部审核", "已驳回"],
+      manage: ["待注册", "已注册"]
+    };
+
+    function menuRows() {
+      return rows.filter(r => r.bucket === currentMenu);
+    }
+
+    function switchMenu(menu) {
+      currentMenu = menu;
+      document.getElementById("tabRegister").classList.toggle("active", menu === "register");
+      document.getElementById("tabManage").classList.toggle("active", menu === "manage");
+      document.getElementById("pageTitle").textContent = menu === "register" ? "域名注册" : "域名管理";
+      document.getElementById("toolbarRegister").style.display = menu === "register" ? "flex" : "none";
+      document.getElementById("toolbarManage").style.display = menu === "manage" ? "flex" : "none";
+      document.querySelectorAll(".manage-only").forEach(el => {
+        el.style.display = menu === "manage" ? "" : "none";
+      });
+      document.querySelectorAll(".register-only").forEach(el => {
+        el.style.display = menu === "register" ? "" : "none";
+      });
+      fillStatusFilter();
+      fillFilters();
+      doClear(true);
+    }
+
+    function fillStatusFilter() {
+      const sel = document.getElementById("fApplyStatus");
+      const opts = STATUS_BY_MENU[currentMenu] || [];
+      sel.innerHTML = `<option value="">申请状态</option>` + opts.map(s => `<option>${s}</option>`).join("");
+    }
+
+    // 域名ID：YM + YYYYMMDD + 2位流水（按创建日当天递增）
+    function dateKey(dateStr) {
+      return (dateStr || TODAY).replace(/-/g, "");
+    }
+
+    function nextDomainId(onDate) {
+      const ymd = dateKey(onDate || TODAY);
+      const prefix = "YM" + ymd;
+      let maxSeq = 0;
+      rows.forEach(r => {
+        if (typeof r.domainId === "string" && r.domainId.startsWith(prefix)) {
+          const seq = parseInt(r.domainId.slice(prefix.length), 10);
+          if (!Number.isNaN(seq) && seq > maxSeq) maxSeq = seq;
+        }
+      });
+      return prefix + String(maxSeq + 1).padStart(2, "0");
+    }
+
+    function dateOnly(v) {
+      return (v || "").slice(0, 10);
+    }
+
+    function daysBetween(a, b) {
+      const da = new Date(dateOnly(a) + "T00:00:00");
+      const db = new Date(dateOnly(b) + "T00:00:00");
+      return Math.floor((db - da) / 86400000);
+    }
+
+    function isStale(updateTime) {
+      return daysBetween(updateTime, TODAY) > 90;
+    }
+
+    function daysToExpire(expireDate) {
+      return daysBetween(TODAY, expireDate);
+    }
+
+    function kv(label, val) {
+      const v = val == null || val === "" ? "" : val;
+      return `<div><span class="label">${label}：</span><span class="val">${v}</span></div>`;
+    }
+
+    function expireTag(expireDate) {
+      if (!expireDate) return "";
+      const d = daysToExpire(expireDate);
+      if (d < 0) return `<span class="tag tag-orange">已过期 ${Math.abs(d)} 天</span>`;
+      if (d <= 30) return `<span class="tag tag-orange">${d} 天后到期</span>`;
+      if (d <= 90) return `<span class="tag tag-blue">${d} 天后到期</span>`;
+      return `<span class="tag tag-green">正常</span>`;
+    }
+
+    function applyStatusTag(status) {
+      const map = {
+        "待部门审核": "tag-orange",
+        "待品牌营销部审核": "tag-blue",
+        "待注册": "tag-gray",
+        "已注册": "tag-green",
+        "已驳回": "tag-red"
+      };
+      const cls = map[status] || "tag-gray";
+      return `<span class="tag ${cls}">${status || "—"}</span>`;
+    }
+
+    function fillFilters() {
+      const deptSel = document.getElementById("fDept");
+      const depts = [...new Set(menuRows().map(r => r.dept).filter(Boolean))].sort();
+      deptSel.innerHTML = `<option value="">所属部门</option>` + depts.map(d => `<option>${d}</option>`).join("");
+    }
+
+    function refreshList(keepFilter) {
+      fillFilters();
+      if (keepFilter) doSearch(true);
+      else {
+        filtered = [...menuRows()];
+        render();
+      }
+    }
+
+    function syncListHeader() {
+      const head = document.getElementById("listHeadRow");
+      const cols = document.getElementById("listColgroup");
+      const table = document.getElementById("listTable");
+      table.classList.remove("flat-list", "flat-cols");
+      if (currentMenu === "register") {
+        cols.innerHTML = `
+          <col class="c-check" />
+          <col class="c-asset" />
+          <col class="c-tm" />
+          <col class="c-risk" />
+          <col class="c-audit" />
+          <col class="c-maint" />
+          <col class="c-ops" />`;
+        head.innerHTML = `
+          <th class="check"><input type="checkbox" id="checkAll" onchange="toggleAll(this.checked)" /></th>
+          <th>资产标识</th>
+          <th>商标归属</th>
+          <th>状态与风险</th>
+          <th>审核信息</th>
+          <th>系统信息</th>
+          <th>操作</th>`;
+      } else {
+        cols.innerHTML = `
+          <col class="c-check" />
+          <col class="c-asset" />
+          <col class="c-tm" />
+          <col class="c-reg" />
+          <col class="c-risk" />
+          <col class="c-audit" />
+          <col class="c-maint" />
+          <col class="c-ops" />`;
+        head.innerHTML = `
+          <th class="check"><input type="checkbox" id="checkAll" onchange="toggleAll(this.checked)" /></th>
+          <th>资产标识</th>
+          <th>商标归属</th>
+          <th>注册信息</th>
+          <th>状态与风险</th>
+          <th>审核信息</th>
+          <th>系统信息</th>
+          <th>操作</th>`;
+      }
+    }
+
+    function renderRegisterRow(r) {
+      return `<tr data-id="${r.id}">
+        <td class="check"><input type="checkbox" class="row-check" value="${r.id}" /></td>
+        <td class="kv">
+          ${kv("域名ID", r.domainId)}
+        </td>
+        <td class="kv">
+          ${kv("商标名称", r.tmName)}
+          ${kv("品牌编码", r.brandCode)}
+          ${kv("所属部门", r.dept)}
+          ${kv("用途说明", r.usage)}
+        </td>
+        <td class="kv">
+          <div><span class="label">申请状态：</span>${applyStatusTag(r.applyStatus)}</div>
+        </td>
+        <td class="kv">
+          ${kv("部门审核人", r.deptAuditor)}
+          ${kv("部门审核时间", r.deptAuditTime)}
+          ${kv("品牌营销部审核人", r.brandAuditor)}
+          ${kv("品牌营销部审核时间", r.brandAuditTime)}
+          ${kv("驳回备注", r.rejectRemark)}
+        </td>
+        <td class="kv">
+          ${kv("创建人", r.creator)}
+          ${kv("创建时间", r.createTime)}
+          ${kv("更新人", r.updater)}
+          ${kv("更新时间", r.updateTime)}
+        </td>
+        <td class="ops">
+          <button type="button" class="link-btn" onclick="openEditForm(${r.id})">编辑</button>
+        </td>
+      </tr>`;
+    }
+
+    function renderManageRow(r) {
+      const stale = isStale(r.updateTime);
+      return `<tr class="${stale ? "stale" : ""}" data-id="${r.id}">
+        <td class="check"><input type="checkbox" class="row-check" value="${r.id}" /></td>
+        <td class="kv">
+          <div><span class="label">域名：</span><span class="val">${r.domain || ""}</span></div>
+          <div><span class="label">域名ID：</span><span class="val">${r.domainId || ""}</span></div>
+        </td>
+        <td class="kv">
+          ${kv("商标名称", r.tmName)}
+          ${kv("品牌编码", r.brandCode)}
+          ${kv("所属部门", r.dept)}
+          ${kv("用途说明", r.usage)}
+        </td>
+        <td class="kv">
+          ${kv("注册商", r.registrar)}
+          ${kv("注册日期", r.regDate)}
+          ${kv("到期日期", r.expireDate)}
+        </td>
+        <td class="kv">
+          ${kv("预警日", r.warnDate)}
+          ${r.expireDate ? `<div style="margin-top:4px;">${expireTag(r.expireDate)}</div>` : ""}
+          ${stale ? `<div style="margin-top:4px;"><span class="tag tag-orange">超 90 天未更新</span></div>` : ""}
+        </td>
+        <td class="kv">
+          ${kv("部门审核人", r.deptAuditor)}
+          ${kv("部门审核时间", r.deptAuditTime)}
+          ${kv("品牌营销部审核人", r.brandAuditor)}
+          ${kv("品牌营销部审核时间", r.brandAuditTime)}
+        </td>
+        <td class="kv">
+          ${kv("创建人", r.creator)}
+          ${kv("创建时间", r.createTime)}
+          ${kv("更新人", r.updater)}
+          ${kv("更新时间", r.updateTime)}
+        </td>
+        <td class="ops">
+          <button type="button" class="link-btn" onclick="openForm(null, ${r.id})">编辑</button>
+        </td>
+      </tr>`;
+    }
+
+    function render() {
+      syncListHeader();
+      const tbody = document.getElementById("tbody");
+      tbody.innerHTML = filtered.map(r =>
+        currentMenu === "register" ? renderRegisterRow(r) : renderManageRow(r)
+      ).join("");
+      document.getElementById("pager").textContent =
+        `共 ${filtered.length} 条 · 每页 10 条 · 1 / 1`;
+      const checkAll = document.getElementById("checkAll");
+      if (checkAll) checkAll.checked = false;
+    }
+
+    function selectedIds() {
+      return [...document.querySelectorAll(".row-check:checked")].map(el => Number(el.value));
+    }
+
+    function toggleAll(checked) {
+      document.querySelectorAll(".row-check").forEach(el => { el.checked = checked; });
+    }
+
+    function syncDateRangeText() {
+      const start = document.getElementById("fStart").value;
+      const end = document.getElementById("fEnd").value;
+      const box = document.getElementById("dateRangeBox");
+      const text = document.getElementById("dateRangeText");
+      if (start || end) {
+        box.classList.add("has-value");
+        text.textContent = `${start || "开始日期"} - ${end || "结束日期"}`;
+      } else {
+        box.classList.remove("has-value");
+        text.textContent = "开始日期 - 结束日期";
+      }
+    }
+
+    function inDateRange(value, start, end) {
+      if (!value) return false;
+      const v = dateOnly(value);
+      if (start && v < start) return false;
+      if (end && v > end) return false;
+      return true;
+    }
+
+    function doSearch(silent) {
+      const dept = document.getElementById("fDept").value;
+      const applyStatus = document.getElementById("fApplyStatus").value;
+      const expireRange = document.getElementById("fExpireRange").value;
+      const timeType = document.getElementById("fTimeType").value;
+      const start = document.getElementById("fStart").value;
+      const end = document.getElementById("fEnd").value;
+      const qField = document.getElementById("qField").value;
+      const q = document.getElementById("q").value.trim().toLowerCase();
+
+      filtered = menuRows().filter(r => {
+        if (dept && r.dept !== dept) return false;
+        if (applyStatus && r.applyStatus !== applyStatus) return false;
+        if (currentMenu === "manage" && expireRange === "30") {
+          if (!r.expireDate || daysToExpire(r.expireDate) > 30) return false;
+        }
+        if (currentMenu === "manage" && expireRange === "stale" && !isStale(r.updateTime)) return false;
+        if ((start || end) && !inDateRange(r[timeType], start, end)) return false;
+        if (q) {
+          const val = String(r[qField] || "").toLowerCase();
+          if (!val.includes(q)) return false;
+        }
+        return true;
+      });
+      render();
+      if (!silent) toast(`已筛选 ${filtered.length} 条`);
+    }
+
+    function doClear(silent) {
+      document.getElementById("fDept").value = "";
+      document.getElementById("fApplyStatus").value = "";
+      document.getElementById("fExpireRange").value = "";
+      document.getElementById("fTimeType").value = currentMenu === "manage" ? "regDate" : "createTime";
+      document.getElementById("fStart").value = "";
+      document.getElementById("fEnd").value = "";
+      document.getElementById("qField").value = currentMenu === "manage" ? "domain" : "tmName";
+      document.getElementById("q").value = "";
+      syncDateRangeText();
+      filtered = [...menuRows()];
+      render();
+      if (!silent) toast("已清空筛选");
+    }
+
+    document.getElementById("fStart").addEventListener("change", syncDateRangeText);
+    document.getElementById("fEnd").addEventListener("change", syncDateRangeText);
+
+    function toast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.style.display = "block";
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => { el.style.display = "none"; }, 1800);
+    }
+
+    function calcWarnDate(expireDate) {
+      if (!expireDate) return "";
+      const d = new Date(expireDate + "T00:00:00");
+      d.setDate(d.getDate() - 30);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    const DEFAULT_ECHO = {
+      tmName: "Sodial",
+      brandCode: "CN2019031201",
+      dept: "跨境电商部",
+      usage: "品牌官网"
+    };
+
+    document.getElementById("fExpireDate").addEventListener("change", (e) => {
+      document.getElementById("fWarnDate").value = calcWarnDate(e.target.value);
+    });
+
+    function fillTmEcho(r) {
+      document.getElementById("fTmNameForm").value = r?.tmName || DEFAULT_ECHO.tmName;
+      document.getElementById("fBrandCode").value = r?.brandCode || DEFAULT_ECHO.brandCode;
+      document.getElementById("fDeptForm").value = r?.dept || DEFAULT_ECHO.dept;
+      document.getElementById("fUsage").value = r?.usage || DEFAULT_ECHO.usage;
+    }
+
+    function renderTmChecklist() {
+      const tbody = document.getElementById("tmRows");
+      tbody.innerHTML = Object.keys(BRAND_CODE_MAP).map(code => {
+        const meta = BRAND_CODE_MAP[code];
+        return `<tr data-code="${code}" onclick="toggleTmRow(event, this)">
+          <td class="chk"><input type="checkbox" class="tm-check" value="${code}" onclick="event.stopPropagation(); syncTmRowSelected(this)" /></td>
+          <td>${code}</td>
+          <td>${meta.tmName}</td>
+          <td>${meta.dept}</td>
+          <td>${meta.region || "—"}</td>
+          <td>${meta.niceClass || "—"}</td>
+          <td>${meta.tmType || "—"}</td>
+        </tr>`;
+      }).join("");
+      document.getElementById("tmCheckAll").checked = false;
+    }
+
+    function syncTmRowSelected(checkbox) {
+      checkbox.closest("tr").classList.toggle("selected", checkbox.checked);
+      const all = [...document.querySelectorAll(".tm-check")];
+      document.getElementById("tmCheckAll").checked = all.length > 0 && all.every(c => c.checked);
+    }
+
+    function toggleTmRow(event, tr) {
+      if (event.target.tagName === "INPUT") return;
+      const cb = tr.querySelector(".tm-check");
+      cb.checked = !cb.checked;
+      syncTmRowSelected(cb);
+    }
+
+    function toggleTmAll(checked) {
+      document.querySelectorAll(".tm-check").forEach(cb => {
+        cb.checked = checked;
+        syncTmRowSelected(cb);
+      });
+    }
+
+    function collectCheckedTms() {
+      return [...document.querySelectorAll(".tm-check:checked")].map(cb => {
+        const meta = BRAND_CODE_MAP[cb.value];
+        return {
+          brandCode: cb.value,
+          tmName: meta.tmName,
+          dept: meta.dept,
+          region: meta.region || "",
+          niceClass: meta.niceClass || "",
+          tmType: meta.tmType || ""
+        };
+      });
+    }
+
+    function openApplyForm() {
+      document.getElementById("aUsage").value = "";
+      renderTmChecklist();
+      document.getElementById("applyModal").classList.add("show");
+    }
+
+    function closeApplyForm() {
+      document.getElementById("applyModal").classList.remove("show");
+    }
+
+    function confirmApply() {
+      const usage = document.getElementById("aUsage").value.trim();
+      const tms = collectCheckedTms();
+
+      if (!usage) return toast("请填写用途说明（必填）");
+      if (!tms.length) return toast("请至少勾选一条商标");
+
+      const created = [];
+      tms.forEach(t => {
+        const row = {
+          id: nextId++,
+          bucket: "register",
+          domain: "",
+          domainId: nextDomainId(TODAY),
+          tmName: t.tmName,
+          brandCode: t.brandCode,
+          dept: t.dept,
+          region: t.region,
+          niceClass: t.niceClass,
+          tmType: t.tmType,
+          usage,
+          registrar: "",
+          regDate: "",
+          expireDate: "",
+          confirmRegTime: "",
+          warnDate: "",
+          applyStatus: "待部门审核",
+          deptAuditor: "",
+          deptAuditTime: "",
+          brandAuditor: "",
+          brandAuditTime: "",
+          rejectRemark: "",
+          creator: CURRENT_USER,
+          createTime: NOW,
+          updater: CURRENT_USER,
+          updateTime: NOW
+        };
+        rows.unshift(row);
+        created.push(row);
+      });
+
+      refreshList();
+      closeApplyForm();
+      toast(`申请已提交，共 ${created.length} 条商标`);
+    }
+
+    function renderEditTmEcho(r) {
+      const code = r?.brandCode || "—";
+      const dict = BRAND_CODE_MAP[r?.brandCode] || {};
+      const meta = {
+        tmName: r?.tmName || dict.tmName || "—",
+        dept: r?.dept || dict.dept || "—",
+        region: r?.region || dict.region || "—",
+        niceClass: r?.niceClass || dict.niceClass || "—",
+        tmType: r?.tmType || dict.tmType || "—"
+      };
+      document.getElementById("editTmRows").innerHTML = `<tr class="selected" data-code="${code}">
+        <td class="chk"><input type="checkbox" checked disabled /></td>
+        <td>${code}</td>
+        <td>${meta.tmName}</td>
+        <td>${meta.dept}</td>
+        <td>${meta.region}</td>
+        <td>${meta.niceClass}</td>
+        <td>${meta.tmType}</td>
+      </tr>`;
+    }
+
+    function openEditForm(id) {
+      const ids = id ? [id] : selectedIds();
+      if (ids.length !== 1) {
+        toast(ids.length === 0 ? "请先勾选一条记录" : "编辑仅支持单选");
+        return;
+      }
+      editingId = ids[0];
+      const r = rows.find(x => x.id === editingId);
+      if (!r) return toast("记录不存在");
+
+      document.getElementById("eUsage").value = r.usage || "";
+      renderEditTmEcho(r);
+      document.getElementById("editModal").classList.add("show");
+    }
+
+    function closeEditForm() {
+      document.getElementById("editModal").classList.remove("show");
+      editingId = null;
+    }
+
+    function confirmEdit() {
+      const usage = document.getElementById("eUsage").value.trim();
+      if (!usage) return toast("请填写用途说明（必填）");
+      const idx = rows.findIndex(r => r.id === editingId);
+      if (idx < 0) return toast("记录不存在");
+
+      rows[idx] = {
+        ...rows[idx],
+        usage,
+        updater: CURRENT_USER,
+        updateTime: NOW
+      };
+      refreshList();
+      closeEditForm();
+      toast("保存成功");
+    }
+
+    function openForm(mode, id) {
+      formMode = mode;
+      editingId = id || null;
+
+      if (!editingId) {
+        const ids = selectedIds();
+        if (ids.length === 0) return toast("请先勾选一条记录");
+        if (ids.length > 1) return toast("编辑仅支持单选");
+        editingId = ids[0];
+      }
+
+      document.getElementById("formTitle").textContent = "编辑";
+
+      const r = rows.find(x => x.id === editingId);
+      if (!r) return toast("记录不存在");
+
+      document.getElementById("fDomain").value = r.domain || "";
+      document.getElementById("fDomainId").value = r.domainId || "";
+      document.getElementById("fieldDomainId").classList.toggle("hidden", !r.domainId);
+      fillTmEcho(r);
+
+      // 仅商标名称、所属部门只读；其余可编辑
+      document.getElementById("fTmNameForm").disabled = true;
+      document.getElementById("fDeptForm").disabled = true;
+      document.getElementById("fBrandCode").disabled = false;
+      document.getElementById("fDomain").disabled = false;
+      document.getElementById("fDomainId").disabled = false;
+      document.getElementById("fUsage").disabled = false;
+      document.getElementById("fRegistrarForm").disabled = false;
+      document.getElementById("fRegDate").disabled = false;
+      document.getElementById("fExpireDate").disabled = false;
+      document.getElementById("fWarnDate").disabled = true;
+
+      document.getElementById("fUsage").value = r.usage || "";
+      document.getElementById("fUsageLabel").innerHTML = "用途说明";
+
+      document.getElementById("fRegistrarForm").value = r.registrar || "";
+      document.getElementById("fRegDate").value = r.regDate || "";
+      document.getElementById("fExpireDate").value = r.expireDate || "";
+      document.getElementById("fWarnDate").value = r.warnDate || calcWarnDate(r.expireDate) || "";
+
+      const expireInput = document.getElementById("fExpireDate");
+      expireInput.onchange = () => {
+        document.getElementById("fWarnDate").value = calcWarnDate(expireInput.value) || "";
+      };
+
+      document.getElementById("formModal").classList.add("show");
+    }
+
+    function closeForm() {
+      document.getElementById("formModal").classList.remove("show");
+    }
+
+    function confirmForm() {
+      const domain = document.getElementById("fDomain").value.trim().toLowerCase();
+      const domainId = document.getElementById("fDomainId").value.trim();
+      const tmName = document.getElementById("fTmNameForm").value;
+      const brandCode = document.getElementById("fBrandCode").value.trim();
+      const dept = document.getElementById("fDeptForm").value;
+      const usage = document.getElementById("fUsage").value.trim();
+      const registrar = document.getElementById("fRegistrarForm").value;
+      const regDate = document.getElementById("fRegDate").value;
+      const expireDate = document.getElementById("fExpireDate").value;
+
+      if (!domain) return toast("请填写域名（必填）");
+      if (!registrar) return toast("请选择注册商（必填）");
+      if (!expireDate) return toast("请填写到期日期（必填）");
+
+      const warnDate = calcWarnDate(expireDate);
+
+      const idx = rows.findIndex(r => r.id === editingId);
+      if (idx < 0) return toast("记录不存在");
+      const other = rows.some(r => r.domain === domain && r.id !== editingId);
+      if (other) return toast("域名已存在");
+      rows[idx] = {
+        ...rows[idx],
+        bucket: "manage",
+        domain,
+        domainId: domainId || rows[idx].domainId,
+        tmName,
+        brandCode,
+        dept,
+        usage,
+        registrar,
+        regDate,
+        expireDate,
+        confirmRegTime: rows[idx].confirmRegTime || NOW,
+        warnDate,
+        applyStatus: "已注册",
+        updater: CURRENT_USER,
+        updateTime: NOW
+      };
+      toast("保存成功");
+      refreshList();
+      closeForm();
+    }
+
+    let auditType = "dept";
+    let pendingAuditIds = [];
+
+    function openAudit(type) {
+      const ids = selectedIds();
+      if (!ids.length) return toast("请先勾选要审核的记录");
+
+      const needStatus = type === "dept" ? "待部门审核" : "待品牌营销部审核";
+      const invalid = ids.filter(id => {
+        const r = rows.find(x => x.id === id);
+        return !r || r.applyStatus !== needStatus;
+      });
+      if (invalid.length) {
+        return toast(`仅支持「${needStatus}」状态的记录，当前有 ${invalid.length} 条不符合`);
+      }
+
+      auditType = type;
+      pendingAuditIds = ids;
+      document.getElementById("auditTitle").textContent = type === "dept" ? "部门审核" : "品牌营销部审核";
+      const passRadio = document.querySelector('input[name="auditResult"][value="pass"]');
+      if (passRadio) passRadio.checked = true;
+      document.getElementById("auditComment").value = "";
+      syncAuditCommentRequired();
+      document.getElementById("auditModal").classList.add("show");
+    }
+
+    function syncAuditCommentRequired() {
+      const selected = document.querySelector('input[name="auditResult"]:checked');
+      const reject = selected && selected.value === "reject";
+      const label = document.getElementById("auditCommentLabel");
+      label.innerHTML = reject
+        ? `<span class="req">*</span>驳回备注`
+        : `驳回备注`;
+      document.getElementById("auditComment").placeholder = reject ? "驳回时必填" : "通过时可空";
+    }
+
+    document.querySelectorAll('input[name="auditResult"]').forEach(el => {
+      el.addEventListener("change", syncAuditCommentRequired);
+    });
+
+    function closeAudit() {
+      document.getElementById("auditModal").classList.remove("show");
+      pendingAuditIds = [];
+      document.getElementById("auditComment").value = "";
+    }
+
+    function confirmAudit() {
+      if (!pendingAuditIds.length) return closeAudit();
+      const selected = document.querySelector('input[name="auditResult"]:checked');
+      if (!selected) return toast("请选择审核结果");
+      const passed = selected.value === "pass";
+      const comment = document.getElementById("auditComment").value.trim();
+      if (!passed && !comment) return toast("驳回时请填写驳回备注");
+
+      pendingAuditIds.forEach(id => {
+        const idx = rows.findIndex(r => r.id === id);
+        if (idx < 0) return;
+        const r = rows[idx];
+        if (auditType === "dept") {
+          rows[idx] = {
+            ...r,
+            deptAuditor: CURRENT_USER,
+            deptAuditTime: NOW,
+            rejectRemark: passed ? (r.rejectRemark || "") : comment,
+            applyStatus: passed ? "待品牌营销部审核" : "已驳回",
+            updater: CURRENT_USER,
+            updateTime: NOW
+          };
+        } else if (passed) {
+          // 品牌营销部审核通过 → 进入域名管理
+          rows[idx] = {
+            ...r,
+            brandAuditor: CURRENT_USER,
+            brandAuditTime: NOW,
+            bucket: "manage",
+            applyStatus: "待注册",
+            updater: CURRENT_USER,
+            updateTime: NOW
+          };
+        } else {
+          rows[idx] = {
+            ...r,
+            brandAuditor: CURRENT_USER,
+            brandAuditTime: NOW,
+            rejectRemark: comment,
+            applyStatus: "已驳回",
+            updater: CURRENT_USER,
+            updateTime: NOW
+          };
+        }
+      });
+
+      const n = pendingAuditIds.length;
+      refreshList();
+      closeAudit();
+      toast(passed
+        ? (auditType === "brand" ? `审核通过 ${n} 条，已进入域名管理` : `审核通过 ${n} 条`)
+        : `已驳回 ${n} 条`);
+    }
+
+    function openImportRegForm() {
+      const file = document.getElementById("importRegFile");
+      if (file) file.value = "";
+      document.getElementById("importRegModal").classList.add("show");
+    }
+
+    function closeImportRegForm() {
+      document.getElementById("importRegModal").classList.remove("show");
+    }
+
+    function openImportRegisterForm() {
+      // 域名注册：导入申请数据（原型演示）
+      rows.unshift({
+        id: nextId++,
+        bucket: "register",
+        domain: "",
+        domainId: nextDomainId(TODAY),
+        tmName: "海纳",
+        brandCode: "CN2021090801",
+        dept: "网络技术部",
+        usage: "导入申请示例",
+        registrar: "",
+        regDate: "",
+        expireDate: "",
+        confirmRegTime: "",
+        warnDate: "",
+        applyStatus: "待部门审核",
+        deptAuditor: "",
+        deptAuditTime: "",
+        brandAuditor: "",
+        brandAuditTime: "",
+        rejectRemark: "",
+        creator: CURRENT_USER,
+        createTime: NOW,
+        updater: CURRENT_USER,
+        updateTime: NOW
+      });
+      refreshList();
+      toast("导入成功，新增 1 条待部门审核申请");
+    }
+
+    function confirmImportReg() {
+      // 域名管理：导入可新增；演示新增一条已注册域名
+      const domain = "import-demo-" + String(nextId).padStart(2, "0") + ".com";
+      const expireDate = "2027-11-16";
+      rows.unshift({
+        id: nextId++,
+        bucket: "manage",
+        domain,
+        domainId: nextDomainId(TODAY),
+        tmName: "Sodial",
+        brandCode: "CN2019031201",
+        dept: "跨境电商部",
+        usage: "导入新增示例",
+        registrar: "阿里云",
+        regDate: TODAY,
+        expireDate,
+        confirmRegTime: NOW,
+        warnDate: calcWarnDate(expireDate),
+        applyStatus: "已注册",
+        deptAuditor: "",
+        deptAuditTime: "",
+        brandAuditor: "",
+        brandAuditTime: "",
+        rejectRemark: "",
+        creator: CURRENT_USER,
+        createTime: NOW,
+        updater: CURRENT_USER,
+        updateTime: NOW
+      });
+
+      refreshList();
+      closeImportRegForm();
+      toast(`导入成功，新增域名 ${domain}`);
+    }
+
+    function viewRow(id) {
+      if (currentMenu === "manage") openForm(null, id);
+      else openEditForm(id);
+    }
+
+    function deleteOne(id) {
+      openConfirm([id]);
+    }
+
+    function doDelete() {
+      const ids = selectedIds();
+      if (!ids.length) return toast("请先勾选要删除的记录");
+      openConfirm(ids);
+    }
+
+    let pendingDeleteIds = [];
+    function openConfirm(ids) {
+      pendingDeleteIds = ids;
+      document.getElementById("confirmDesc").textContent =
+        ids.length === 1
+          ? `确定删除域名「${rows.find(r => r.id === ids[0])?.domain || ""}」吗？（原型演示）`
+          : `确定删除选中的 ${ids.length} 条记录吗？（原型演示）`;
+      document.getElementById("confirmModal").classList.add("show");
+    }
+    function closeConfirm() {
+      document.getElementById("confirmModal").classList.remove("show");
+      pendingDeleteIds = [];
+    }
+    document.getElementById("confirmOk").onclick = () => {
+      rows = rows.filter(r => !pendingDeleteIds.includes(r.id));
+      refreshList();
+      closeConfirm();
+      toast("已删除");
+    };
+
+    fillStatusFilter();
+
+    const EMBED = new URLSearchParams(location.search).has("embed");
+    if (EMBED) {
+      const tabs = document.querySelector(".menu-tabs");
+      const title = document.getElementById("pageTitle");
+      if (tabs) tabs.style.display = "none";
+      if (title) title.style.display = "none";
+      document.body.style.background = "transparent";
+      window.addEventListener("message", (e) => {
+        const data = e.data || {};
+        if (data.type === "switchDomainMenu" && (data.menu === "register" || data.menu === "manage")) {
+          switchMenu(data.menu);
+        }
+      });
+      const boot = new URLSearchParams(location.search).get("menu");
+      switchMenu(boot === "manage" ? "manage" : "register");
+      window.parent && window.parent.postMessage({ type: "domainReady" }, "*");
+    } else {
+      switchMenu("register");
+    }
+  </script>
+</body>
+</html>

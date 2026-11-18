@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>品牌管理 - 列表原型</title>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --card: #fff;
+      --border: #e5e7eb;
+      --header: #e8eef5;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #1677ff;
+      --danger: #ff4d4f;
+      --ok: #52c41a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+    }
+    .page { padding: 10px 12px 16px; }
+    .title { font-size: 17px; font-weight: 600; margin: 0 0 8px; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 8px;
+      background: var(--card);
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .toolbar .spacer { flex: 1; }
+    .btn {
+      border: 1px solid #d9d9d9;
+      background: #fff;
+      color: var(--text);
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #4096ff; color: #fff; }
+    .btn-danger {
+      border-color: #ffa39e;
+      color: var(--danger);
+    }
+    .btn-ghost-teal {
+      border-color: #13c2c2;
+      color: #08979c;
+    }
+    .filters {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+    }
+    .filters-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+    .filters select,
+    .filters input[type="text"],
+    .filters input[type="date"] {
+      height: 30px;
+      border: 1px solid #d9d9d9;
+      border-radius: 15px;
+      padding: 0 10px;
+      outline: none;
+      background: #fff;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .filters select:focus,
+    .filters input:focus { border-color: var(--primary); }
+    .filters select { min-width: 100px; max-width: 120px; }
+    .date-range {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      height: 30px;
+      width: 200px;
+      border: 1px solid #d9d9d9;
+      border-radius: 15px;
+      padding: 0 12px;
+      background: #fff;
+      color: #bfbfbf;
+      cursor: pointer;
+      user-select: none;
+      overflow: hidden;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .date-range.has-value { color: var(--text); }
+    .date-range input[type="date"] {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      opacity: 0;
+      width: 50%;
+      height: 100%;
+      cursor: pointer;
+      border: none !important;
+      padding: 0 !important;
+      margin: 0;
+    }
+    .date-range #fStart { left: 0; }
+    .date-range #fEnd { left: 50%; }
+    .date-range .range-text {
+      pointer-events: none;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+    .filters-row select { position: relative; z-index: 3; }
+    .combo-search {
+      display: inline-flex;
+      align-items: stretch;
+      height: 30px;
+      border: 1px solid #d9d9d9;
+      border-radius: 15px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .combo-search:focus-within { border-color: var(--primary); }
+    .combo-search select {
+      height: 100% !important;
+      min-width: 96px !important;
+      max-width: 110px !important;
+      border: none !important;
+      border-radius: 0 !important;
+      border-right: 1px solid #d9d9d9 !important;
+      padding: 0 8px !important;
+      background: #fafafa;
+      color: var(--muted);
+    }
+    .combo-search input {
+      height: 100% !important;
+      width: 160px;
+      border: none !important;
+      border-radius: 0 !important;
+      padding: 0 10px !important;
+      min-width: 0;
+    }
+    .btn-pill { border-radius: 15px !important; height: 30px !important; }
+    .btn-link {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      height: 30px;
+      padding: 0 8px;
+      font-size: 13px;
+    }
+    .btn-link:hover { color: var(--primary); }
+    .radio-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 30px;
+      border: 1px solid #d9d9d9;
+      border-radius: 15px;
+      padding: 0 12px;
+      background: #fff;
+      white-space: nowrap;
+    }
+    .radio-box .rb-title {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .radio-box label {
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .radio-box input { margin-right: 2px; vertical-align: -1px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: auto;
+      max-height: calc(100vh - 120px);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-spacing: 0;
+      table-layout: fixed;
+    }
+    th {
+      background: var(--header);
+      font-weight: 600;
+      text-align: left;
+      padding: 4px 6px;
+      border-bottom: 1px solid #d9d9d9;
+      border-right: 1px solid #d9d9d9;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      font-size: 13px;
+    }
+    th:last-child, td:last-child { border-right: none; }
+    td {
+      padding: 4px 6px;
+      border-bottom: 1px solid #d9d9d9;
+      border-right: 1px solid #d9d9d9;
+      vertical-align: top;
+      background: #fff;
+    }
+    tr:hover td { background: #f5f8fc; }
+    th.check,
+    td.check {
+      width: 20px !important;
+      min-width: 20px !important;
+      max-width: 20px !important;
+      text-align: center;
+      vertical-align: middle !important;
+      padding: 0 !important;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .check input[type="checkbox"] {
+      margin: 0;
+      cursor: pointer;
+      width: 13px;
+      height: 13px;
+      vertical-align: middle;
+    }
+    .kv { line-height: 1.45; overflow: hidden; }
+    .kv > div {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .kv .label { color: var(--muted); }
+    .kv .val { color: var(--text); }
+    .tag {
+      display: inline-block;
+      padding: 0 5px;
+      height: 20px;
+      line-height: 20px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+    .tag-green { background: #f6ffed; color: var(--ok); border: 1px solid #b7eb8f; }
+    .tag-blue { background: #e6f4ff; color: var(--primary); border: 1px solid #91caff; }
+    .tag-orange { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+    .link { color: var(--primary); text-decoration: none; }
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.78);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 6px;
+      display: none;
+      z-index: 99;
+    }
+    .modal-mask {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      display: none; align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal {
+      background: #fff; width: 480px; max-width: 92vw;
+      border-radius: 8px; padding: 20px 24px; box-shadow: 0 8px 24px rgba(0,0,0,.15);
+    }
+    .modal h3 { margin: 0 0 12px; font-size: 16px; }
+    .modal p { margin: 0 0 16px; color: var(--muted); line-height: 1.6; }
+    .modal .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+    .modal-add {
+      width: 980px; max-width: 96vw; max-height: 90vh;
+      display: flex; flex-direction: column; padding: 0; overflow: hidden;
+      border-radius: 4px;
+    }
+    .modal-add .modal-hd {
+      padding: 12px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-add .modal-hd h3 {
+      margin: 0; font-size: 16px; font-weight: 600; color: var(--text);
+      border-left: 3px solid var(--primary); padding-left: 10px; line-height: 1.2;
+    }
+    .modal-add .modal-bd {
+      padding: 12px 24px 8px; overflow: auto; flex: 1; background: #fff;
+    }
+    .modal-add .modal-ft {
+      padding: 10px 20px; border-top: 1px solid #f0f0f0;
+      display: flex; justify-content: flex-end; gap: 8px; background: #fff;
+    }
+    .form-sec { margin-bottom: 16px; }
+    .form-sec:last-child { margin-bottom: 8px; }
+    .form-sec h4 {
+      margin: 0 0 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      border-left: 3px solid var(--primary);
+      padding-left: 8px;
+      line-height: 1.2;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      column-gap: 16px;
+      row-gap: 14px;
+    }
+    .field {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .field label {
+      font-size: 13px;
+      color: var(--text);
+      text-align: right;
+      line-height: 1.3;
+      justify-self: stretch;
+    }
+    .field label .req { color: var(--danger); margin-right: 2px; }
+    .field input, .field select {
+      height: 32px; border: 1px solid #d9d9d9; border-radius: 6px;
+      padding: 0 11px; font-size: 13px; outline: none; background: #fff; width: 100%;
+      color: var(--text);
+    }
+    .field input:focus, .field select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(22,119,255,.12); }
+    .field input:disabled, .field select:disabled {
+      background: #f5f5f5; color: var(--muted); cursor: not-allowed;
+    }
+    .field.hidden { display: none; }
+    .field.field-top { align-items: start; }
+    .field.field-top label { padding-top: 6px; }
+    .input-affix {
+      display: flex; align-items: center; gap: 6px; width: 100%; min-width: 0;
+    }
+    .input-affix input { flex: 1; min-width: 0; }
+    .input-affix .affix {
+      color: var(--muted); font-size: 13px; flex-shrink: 0; line-height: 32px;
+    }
+    .ms-wrap { position: relative; width: 100%; }
+    .ms-trigger {
+      min-height: 32px; border: 1px solid #d9d9d9; border-radius: 6px;
+      padding: 4px 28px 4px 8px; background: #fff; cursor: pointer;
+      display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+      position: relative;
+    }
+    .ms-trigger:focus, .ms-wrap.open .ms-trigger {
+      border-color: var(--primary); box-shadow: 0 0 0 2px rgba(22,119,255,.12);
+    }
+    .ms-trigger::after {
+      content: ""; position: absolute; right: 10px; top: 50%;
+      border: 5px solid transparent; border-top-color: #999; margin-top: -2px;
+    }
+    .ms-placeholder { color: #bfbfbf; font-size: 13px; }
+    .ms-tag {
+      display: inline-flex; align-items: center; gap: 2px;
+      height: 22px; padding: 0 6px; border-radius: 4px;
+      background: #f0f5ff; color: var(--primary); font-size: 12px;
+    }
+    .ms-tag button {
+      border: none; background: transparent; color: var(--primary);
+      cursor: pointer; padding: 0; line-height: 1; font-size: 14px;
+    }
+    .ms-panel {
+      display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px);
+      max-height: 220px; overflow: auto; background: #fff;
+      border: 1px solid #d9d9d9; border-radius: 6px;
+      box-shadow: 0 6px 16px rgba(0,0,0,.12); z-index: 20; padding: 4px 0;
+    }
+    .ms-wrap.open .ms-panel { display: block; }
+    .ms-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 12px; cursor: pointer; font-size: 13px;
+    }
+    .ms-item:hover { background: #f5f8fc; }
+    .ms-item input { width: auto; height: auto; margin: 0; }
+    .pager {
+      display: flex; justify-content: flex-end; align-items: center;
+      gap: 6px; padding: 6px 10px; color: var(--muted); background: #fff;
+      border-top: 1px solid var(--border);
+      position: sticky; bottom: 0;
+      font-size: 13px;
+    }
+    col.c-check { width: 20px; }
+    col.c-right { width: 12%; }
+    col.c-mark { width: 11%; }
+    col.c-usage { width: 10%; }
+    col.c-class { width: 5%; }
+    col.c-time { width: 11%; }
+    col.c-official { width: 11%; }
+    col.c-file { width: 7%; }
+    col.c-duty { width: 11%; }
+    col.c-extra { width: 10%; }
+    col.c-risk { width: 10%; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1 class="title">品牌管理</h1>
+
+    <div class="filters">
+      <div class="filters-row">
+        <select id="fPlatform" title="备案平台">
+          <option value="">备案平台</option>
+          <option>Amazon</option>
+          <option>EBay</option>
+          <option>Aliexpress</option>
+          <option>Lazada</option>
+          <option>Shopee</option>
+          <option>MyMall</option>
+          <option>天猫</option>
+          <option>京东</option>
+        </select>
+        <select id="fProgress" title="申请进度">
+          <option value="">申请进度</option>
+          <option>审查中</option>
+          <option>审查已过</option>
+          <option>已提交资料</option>
+          <option>在准备资料</option>
+          <option>商标有误</option>
+          <option>已下证书</option>
+          <option>购买商标</option>
+          <option>购买中</option>
+          <option>已下受理通知</option>
+        </select>
+        <select id="fApplicant" title="申请人">
+          <option value="">申请人</option>
+          <option>张敏</option>
+          <option>王芳</option>
+          <option>赵磊</option>
+          <option>刘洋</option>
+        </select>
+        <select id="fDept" title="所属部门">
+          <option value="">所属部门</option>
+          <option>品牌部</option>
+          <option>市场中心</option>
+          <option>法务部</option>
+          <option>运营部</option>
+        </select>
+        <select id="fTimeType" title="日期类型">
+          <option value="apply">申请日期</option>
+          <option value="reg">注册日期</option>
+          <option value="oath">宣誓日期</option>
+          <option value="expire">到期日期</option>
+          <option value="warn">预警日</option>
+        </select>
+        <div class="date-range" id="dateRangeBox" title="开始日期 - 结束日期">
+          <span class="range-text" id="dateRangeText">开始日期 - 结束日期</span>
+          <input type="date" id="fStart" />
+          <input type="date" id="fEnd" />
+        </div>
+        <select id="fRenew" title="续展状态">
+          <option value="">续展状态</option>
+          <option>已续展</option>
+          <option>待续展</option>
+          <option>不续展</option>
+        </select>
+        <select id="fOath" title="宣誓状态">
+          <option value="">宣誓状态</option>
+          <option>已宣誓</option>
+          <option>待宣誓</option>
+          <option>不适用</option>
+        </select>
+        <div class="combo-search">
+          <select id="qField" title="搜索字段">
+            <option value="tmName" selected>商标名称</option>
+            <option value="company">公司名称</option>
+            <option value="registrar">注册商</option>
+            <option value="brandCode">品牌编码</option>
+            <option value="applyNo">申请号</option>
+            <option value="regNo">注册号</option>
+          </select>
+          <input id="q" type="text" placeholder="请输入" />
+        </div>
+        <button class="btn btn-primary btn-pill" onclick="doSearch()">搜索</button>
+        <button class="btn-link" onclick="doClear()">清空</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn btn-primary" onclick="openEditForm()">编辑</button>
+      <button class="btn btn-danger" onclick="requireSelect('删除')">删除</button>
+      <button class="btn" onclick="toast('打开【导入】对话框')">导入</button>
+      <button class="btn" onclick="toast('开始【导出】')">导出</button>
+      <button class="btn btn-ghost-teal" onclick="openUpload('受理回执')">上传受理回执</button>
+      <button class="btn btn-ghost-teal" onclick="openUpload('证书')">上传证书</button>
+    </div>
+
+    <div class="card">
+      <table>
+        <colgroup>
+          <col class="c-check" />
+          <col class="c-right" />
+          <col class="c-mark" />
+          <col class="c-usage" />
+          <col class="c-class" />
+          <col class="c-time" />
+          <col class="c-official" />
+          <col class="c-file" />
+          <col class="c-duty" />
+          <col class="c-extra" />
+          <col class="c-risk" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="check"><input type="checkbox" id="checkAll" onchange="toggleAll(this.checked)" /></th>
+            <th>权利主体</th>
+            <th>商标标识</th>
+            <th>使用归属</th>
+            <th>分类与费用</th>
+            <th>关键时间节点</th>
+            <th>官方编号与状态</th>
+            <th>官方文件</th>
+            <th>义务维护</th>
+            <th>辅助信息</th>
+            <th>系统信息</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="pager" id="pager">共 0 条 · 每页 10 条 · 1 / 1</div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal-mask" id="modal">
+    <div class="modal">
+      <h3 id="modalTitle">上传文件</h3>
+      <p id="modalDesc">选择文件后确认上传（原型演示）。</p>
+      <input type="file" id="fileInput" />
+      <div class="actions">
+        <button class="btn" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" onclick="confirmUpload()">确认上传</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="addModal">
+    <div class="modal modal-add">
+      <div class="modal-hd">
+        <h3 id="formTitle">添加</h3>
+        <button class="btn" onclick="closeAddForm()" title="关闭">×</button>
+      </div>
+      <div class="modal-bd" id="ledgerForm">
+        <div class="form-sec">
+          <h4>商标标识 / 权利主体</h4>
+          <div class="form-grid">
+            <div class="field">
+              <label><span class="req">*</span>商标类型</label>
+              <select id="fTmType"><option>文字</option><option>图形</option><option>组合</option><option>声音</option><option>颜色</option></select>
+            </div>
+            <div class="field">
+              <label><span class="req">*</span>商标名称</label>
+              <input id="fTmName" value="星云" />
+            </div>
+            <div class="field">
+              <label><span class="req">*</span>国别/地区</label>
+              <select id="fRegion"><option>中国</option><option>US</option><option>EU</option><option>JP</option><option>GB</option></select>
+            </div>
+            <!-- 品牌编码：仅编辑展示，添加时不展示 -->
+            <div class="field hidden" id="fieldBrandCode">
+              <label>品牌编码</label>
+              <input id="fBrandCode" disabled />
+            </div>
+            <div class="field">
+              <label>公司名称</label>
+              <input id="fCompany" value="星云科技有限公司" />
+            </div>
+            <div class="field">
+              <label>申请人</label>
+              <input id="fApplicantForm" value="张敏" placeholder="默认当前登录人，可修改" />
+            </div>
+            <div class="field">
+              <label>所属部门</label>
+              <input id="fDept" value="品牌部" placeholder="默认当前登录人所属部门，可修改" />
+            </div>
+            <div class="field">
+              <label>注册商</label>
+              <input id="fRegistrar" value="华信知识产权代理有限公司" />
+            </div>
+            <div class="field">
+              <label>权利人类型</label>
+              <select id="fRightType">
+                <option value="">请选择</option>
+                <option>自有</option><option>关联方</option><option>供应商代持</option><option>自然人</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-sec">
+          <h4>使用归属</h4>
+          <div class="form-grid">
+            <div class="field">
+              <label><span class="req">*</span>使用人1</label>
+              <input id="fUser1" value="张敏" />
+            </div>
+            <div class="field">
+              <label>备案平台1</label>
+              <select id="fFilingPlatform1">
+                <option value="">请选择</option>
+                <option>Amazon</option><option>EBay</option><option>Aliexpress</option>
+                <option>Lazada</option><option>Shopee</option><option>MyMall</option>
+                <option>天猫</option><option>京东</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>备案账号1</label>
+              <input id="fFilingAccount1" value="xy_brand_cn" />
+            </div>
+            <div class="field">
+              <label>授权账号1</label>
+              <input id="fAuthAccount1" value="xy_auth_01" />
+            </div>
+            <div class="field">
+              <label>使用人2</label>
+              <input id="fUser2" value="李强" />
+            </div>
+            <div class="field">
+              <label>备案平台2</label>
+              <select id="fFilingPlatform2">
+                <option value="">请选择</option>
+                <option>Amazon</option><option>EBay</option><option>Aliexpress</option>
+                <option>Lazada</option><option>Shopee</option><option>MyMall</option>
+                <option>天猫</option><option>京东</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>备案账号2</label>
+              <input id="fFilingAccount2" value="xy_tmall" />
+            </div>
+            <div class="field">
+              <label>授权账号2</label>
+              <input id="fAuthAccount2" value="xy_auth_tm" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-sec">
+          <h4>分类与关键时间节点</h4>
+          <div class="form-grid">
+            <div class="field field-top">
+              <label><span class="req">*</span>商标类别</label>
+              <div class="ms-wrap" id="niceClassMs">
+                <div class="ms-trigger" id="niceClassTrigger" tabindex="0"></div>
+                <div class="ms-panel" id="niceClassPanel"></div>
+              </div>
+            </div>
+            <div class="field">
+              <label>申请日期</label>
+              <input id="fApplyDate" type="date" value="2024-03-12" />
+            </div>
+            <div class="field">
+              <label>注册日期</label>
+              <input id="fRegDate" type="date" value="2025-01-08" />
+            </div>
+            <div class="field">
+              <label>宣誓日期</label>
+              <input id="fOathDate" type="date" />
+            </div>
+            <div class="field">
+              <label>到期日期</label>
+              <input id="fExpireDate" type="date" value="2035-01-07" />
+            </div>
+            <div class="field">
+              <label>预警日</label>
+              <input id="fWarnDate" type="date" value="2034-07-07" disabled />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-sec">
+          <h4>官方编号 / 文件 / 义务维护</h4>
+          <div class="form-grid">
+            <div class="field">
+              <label>申请号</label>
+              <input id="fApplyNo" value="TM20240312001" />
+            </div>
+            <div class="field">
+              <label>注册号</label>
+              <input id="fRegNo" value="R20250108088" />
+            </div>
+            <div class="field">
+              <label>申请进度</label>
+              <select id="fProgressForm">
+                <option value="">请选择</option>
+                <option>审查中</option>
+                <option>审查已过</option>
+                <option>已提交资料</option>
+                <option>在准备资料</option>
+                <option>商标有误</option>
+                <option>已下证书</option>
+                <option>购买商标</option>
+                <option>购买中</option>
+                <option>已下受理通知</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>受理回执</label>
+              <input id="fReceipt" type="file" />
+            </div>
+            <div class="field">
+              <label>证书</label>
+              <input id="fCertFile" type="file" />
+            </div>
+            <div class="field">
+              <label>续展状态</label>
+              <select id="fRenewForm">
+                <option value="">请选择</option>
+                <option>已续展</option><option>待续展</option><option>不续展</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>宣誓状态</label>
+              <select id="fOathForm">
+                <option value="">请选择</option>
+                <option>已宣誓</option><option>待宣誓</option><option>不适用</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>续展代理</label>
+              <input id="fRenewAgent" value="华信知识产权代理" />
+            </div>
+            <div class="field">
+              <label>宣誓代理</label>
+              <input id="fOathAgent" value="" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-sec">
+          <h4>辅助信息</h4>
+          <div class="form-grid">
+            <div class="field">
+              <label>查询通过率</label>
+              <div class="input-affix">
+                <input id="fPassRate" type="number" min="0" max="100" step="1" value="92" placeholder="0-100" />
+                <span class="affix">%</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>备用邮箱</label>
+              <input id="fEmail" value="ip@xingyun.com" />
+            </div>
+            <div class="field">
+              <label>备注</label>
+              <input id="fRemark" value="核心品牌，优先维护" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn" onclick="closeAddForm()">取消</button>
+        <button class="btn btn-primary" onclick="confirmAdd()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 一个商标多类拆成多行；空值用 ""，列表展示为空
+    // 示例数据与最新字段口径对齐：备案平台枚举、续展/宣誓状态、国别选项
+    // 原型：当前登录人（添加时申请人/所属部门默认带回，可修改）
+    const currentUser = { name: "张敏", dept: "品牌部" };
+
+    const baseRows = [
+      {
+        company: "星云科技有限公司",
+        applicant: "张敏",
+        dept: "品牌部",
+        registrar: "华信知识产权代理有限公司",
+        rightType: "自有",
+        tmType: "文字",
+        tmName: "星云",
+        region: "中国",
+        brandCode: "CN2024031201",
+        user1: "张敏",
+        filingPlatform1: "Amazon",
+        filingAccount1: "xy_amz_cn",
+        authAccount1: "xy_auth_amz",
+        user2: "李强",
+        filingPlatform2: "天猫",
+        filingAccount2: "xy_tmall",
+        authAccount2: "xy_auth_tm",
+        niceClasses: ["第9类", "第35类", "第42类"],
+        applyDate: "2024-03-12",
+        regDate: "2025-01-08",
+        oathDate: "",
+        expireDate: "2035-01-07",
+        warnDate: "2034-07-07",
+        applyNo: "TM20240312001",
+        regNo: "R20250108088",
+        progress: "已下证书",
+        progressClass: "tag-green",
+        receipt: "查看回执",
+        cert: "查看证书",
+        renew: "已续展",
+        oath: "不适用",
+        renewAgent: "华信知识产权代理",
+        oathAgent: "",
+        passRate: "92%",
+        email: "ip@xingyun.com",
+        remark: "核心品牌，优先维护",
+        creator: "张敏",
+        createTime: "2024-03-12 10:20",
+        updater: "李强",
+        updateTime: "2026-11-10 15:06",
+      },
+      {
+        company: "海蓝贸易有限公司",
+        applicant: "王芳",
+        dept: "市场中心",
+        registrar: "正衡商标代理事务所",
+        rightType: "关联方",
+        tmType: "组合",
+        tmName: "海蓝",
+        region: "EU",
+        brandCode: "EU2025061802",
+        user1: "王芳",
+        filingPlatform1: "Shopee",
+        filingAccount1: "hl_shopee",
+        authAccount1: "hl_auth_01",
+        user2: "",
+        filingPlatform2: "",
+        filingAccount2: "",
+        authAccount2: "",
+        niceClasses: ["第3类", "第5类"],
+        applyDate: "2025-06-18",
+        regDate: "",
+        oathDate: "",
+        expireDate: "",
+        warnDate: "",
+        applyNo: "TM20250618022",
+        regNo: "",
+        progress: "审查已过",
+        progressClass: "tag-blue",
+        receipt: "查看回执",
+        cert: "",
+        renew: "",
+        oath: "不适用",
+        renewAgent: "",
+        oathAgent: "",
+        passRate: "78%",
+        email: "legal@hailan.com",
+        remark: "欧盟申请中，备案平台2未填（选填）",
+        creator: "王芳",
+        createTime: "2025-06-18 09:12",
+        updater: "王芳",
+        updateTime: "2026-11-08 11:30",
+      },
+      {
+        company: "青禾食品股份有限公司",
+        applicant: "赵磊",
+        dept: "法务部",
+        registrar: "中联知识产权代理中心",
+        rightType: "供应商代持",
+        tmType: "图形",
+        tmName: "青禾",
+        region: "US",
+        brandCode: "US2022061807",
+        user1: "赵磊",
+        filingPlatform1: "EBay",
+        filingAccount1: "qh_ebay",
+        authAccount1: "qh_auth_01",
+        user2: "陈雪",
+        filingPlatform2: "京东",
+        filingAccount2: "qh_jd",
+        authAccount2: "qh_auth_jd",
+        niceClasses: ["第29类", "第30类", "第32类"],
+        applyDate: "2022-06-18",
+        regDate: "2023-02-20",
+        oathDate: "2028-02-20",
+        expireDate: "2033-02-19",
+        warnDate: "2027-08-20",
+        applyNo: "TM20220618077",
+        regNo: "R20230220115",
+        progress: "已下证书",
+        progressClass: "tag-orange",
+        receipt: "查看回执",
+        cert: "查看证书",
+        renew: "待续展",
+        oath: "待宣誓",
+        renewAgent: "正衡商标代理",
+        oathAgent: "正衡商标代理",
+        passRate: "85%",
+        email: "tm@qinghefood.com",
+        remark: "美国商标，宣誓日临近预警",
+        creator: "赵磊",
+        createTime: "2022-06-18 14:05",
+        updater: "陈雪",
+        updateTime: "2026-11-12 16:42",
+      },
+      {
+        company: "晨光家居有限公司",
+        applicant: "刘洋",
+        dept: "运营部",
+        registrar: "",
+        rightType: "",
+        tmType: "文字",
+        tmName: "晨光+",
+        region: "中国",
+        brandCode: "",
+        user1: "刘洋",
+        filingPlatform1: "",
+        filingAccount1: "",
+        authAccount1: "",
+        user2: "",
+        filingPlatform2: "",
+        filingAccount2: "",
+        authAccount2: "",
+        niceClasses: ["第11类", "第21类"],
+        applyDate: "2026-11-01",
+        regDate: "",
+        oathDate: "",
+        expireDate: "",
+        warnDate: "",
+        applyNo: "TM20261101009",
+        regNo: "",
+        progress: "已下受理通知",
+        progressClass: "tag-blue",
+        receipt: "查看回执",
+        cert: "",
+        renew: "",
+        oath: "不适用",
+        renewAgent: "",
+        oathAgent: "",
+        passRate: "70%",
+        email: "brand@chenguang.com",
+        remark: "新申请：权利人类型/备案平台选填未填，品牌编码待注册成功后生成",
+        creator: "刘洋",
+        createTime: "2026-11-01 10:08",
+        updater: "刘洋",
+        updateTime: "2026-11-15 09:20",
+      },
+    ];
+
+    const rows = baseRows.flatMap((item) =>
+      item.niceClasses.map((niceClass) => {
+        const { niceClasses, ...rest } = item;
+        return { ...rest, niceClass };
+      })
+    );
+
+    function display(value) {
+      return value == null || value === "" ? "" : value;
+    }
+
+    function kv(label, value, isLink) {
+      const raw = display(value);
+      const val = isLink && raw
+        ? `<a class="link" href="javascript:void(0)" onclick="toast('打开：${raw}')">${raw}</a>`
+        : raw;
+      return `<div><span class="label">${label}：</span><span class="val">${val}</span></div>`;
+    }
+
+    function progressCell(r) {
+      const text = display(r.progress);
+      if (!text) {
+        return `<div><span class="label">申请进度：</span><span class="val"></span></div>`;
+      }
+      return `<div><span class="label">申请进度：</span><span class="tag ${r.progressClass}">${text}</span></div>`;
+    }
+
+    function render() {
+      document.getElementById("tbody").innerHTML = rows.map((r, i) => `
+        <tr>
+          <td class="check"><input type="checkbox" class="row-check" data-name="${r.tmName}-${r.niceClass}" /></td>
+          <td class="kv">
+            ${kv("公司名称", r.company)}
+            ${kv("申请人", r.applicant)}
+            ${kv("所属部门", r.dept)}
+            ${kv("注册商", r.registrar)}
+            ${kv("权利人类型", r.rightType)}
+          </td>
+          <td class="kv">
+            ${kv("商标类型", r.tmType)}
+            ${kv("商标名称", r.tmName)}
+            ${kv("国别/地区", r.region)}
+            ${kv("品牌编码", r.brandCode)}
+          </td>
+          <td class="kv">
+            ${kv("使用人1", r.user1)}
+            ${kv("备案平台1", r.filingPlatform1)}
+            ${kv("备案账号1", r.filingAccount1)}
+            ${kv("授权账号1", r.authAccount1)}
+            ${kv("使用人2", r.user2)}
+            ${kv("备案平台2", r.filingPlatform2)}
+            ${kv("备案账号2", r.filingAccount2)}
+            ${kv("授权账号2", r.authAccount2)}
+          </td>
+          <td class="kv">
+            ${kv("商标类别", r.niceClass)}
+          </td>
+          <td class="kv">
+            ${kv("申请日期", r.applyDate)}
+            ${kv("注册日期", r.regDate)}
+            ${kv("宣誓日期", r.oathDate)}
+            ${kv("到期日期", r.expireDate)}
+            ${kv("预警日", r.warnDate)}
+          </td>
+          <td class="kv">
+            ${kv("申请号", r.applyNo)}
+            ${kv("注册号", r.regNo)}
+            ${progressCell(r)}
+          </td>
+          <td class="kv">
+            ${kv("受理回执", r.receipt, true)}
+            ${kv("证书", r.cert, true)}
+          </td>
+          <td class="kv">
+            ${kv("续展状态", r.renew)}
+            ${kv("宣誓状态", r.oath)}
+            ${kv("续展代理", r.renewAgent)}
+            ${kv("宣誓代理", r.oathAgent)}
+          </td>
+          <td class="kv">
+            ${kv("查询通过率", r.passRate)}
+            ${kv("备用邮箱", r.email)}
+            ${kv("备注", r.remark)}
+          </td>
+          <td class="kv">
+            ${kv("创建人", r.creator)}
+            ${kv("创建时间", r.createTime)}
+            ${kv("更新人", r.updater)}
+            ${kv("更新时间", r.updateTime)}
+          </td>
+        </tr>
+      `).join("");
+      document.getElementById("pager").textContent =
+        `共 ${rows.length} 条 · 每页 10 条 · 1 / 1（多类已拆行）`;
+    }
+
+    function selectedNames() {
+      return [...document.querySelectorAll(".row-check:checked")].map((el) => el.dataset.name);
+    }
+
+    function requireSelect(action) {
+      const names = selectedNames();
+      if (!names.length) {
+        toast(`请先勾选要${action}的记录`);
+        return;
+      }
+      toast(`${action}：${names.join("、")}`);
+    }
+
+    function toggleAll(checked) {
+      document.querySelectorAll(".row-check").forEach((el) => { el.checked = checked; });
+    }
+
+    let uploadKind = "";
+
+    function toast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.style.display = "block";
+      clearTimeout(window.__t);
+      window.__t = setTimeout(() => (el.style.display = "none"), 1600);
+    }
+
+    function openUpload(kind) {
+      const names = selectedNames();
+      uploadKind = kind;
+      document.getElementById("modalTitle").textContent = "上传" + kind;
+      document.getElementById("modalDesc").textContent = names.length
+        ? `为「${names.join("、")}」上传${kind}（原型演示）。`
+        : `请勾选记录后上传${kind}；也可先选文件体验上传流程。`;
+      document.getElementById("fileInput").value = "";
+      document.getElementById("modal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("modal").style.display = "none";
+    }
+
+    function confirmUpload() {
+      const f = document.getElementById("fileInput").files[0];
+      closeModal();
+      toast(f ? `已上传${uploadKind}：${f.name}` : `已模拟上传${uploadKind}`);
+    }
+
+    let formMode = "add";
+    let selectedNiceClasses = [];
+
+    function setSelectValue(id, value) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (value == null || value === "") {
+        el.value = "";
+        return;
+      }
+      const hit = [...el.options].find((o) => o.value === value || o.text === value);
+      if (hit) el.value = hit.value;
+      else {
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = value;
+        el.appendChild(opt);
+        el.value = value;
+      }
+    }
+
+    function toNiceClassLabel(v) {
+      const raw = String(v || "").trim();
+      if (!raw) return "";
+      if (/^第\d+类$/.test(raw)) return raw;
+      const n = raw.replace(/^第/, "").replace(/类$/, "").trim();
+      return n ? `第${n}类` : "";
+    }
+
+    function initNiceClassMultiSelect() {
+      const panel = document.getElementById("niceClassPanel");
+      const trigger = document.getElementById("niceClassTrigger");
+      const wrap = document.getElementById("niceClassMs");
+      panel.innerHTML = Array.from({ length: 45 }, (_, i) => {
+        const label = `第${i + 1}类`;
+        return `<label class="ms-item"><input type="checkbox" value="${label}" />${label}</label>`;
+      }).join("");
+
+      trigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        wrap.classList.toggle("open");
+      });
+      panel.addEventListener("click", (e) => e.stopPropagation());
+      panel.querySelectorAll("input[type=checkbox]").forEach((cb) => {
+        cb.addEventListener("change", () => {
+          selectedNiceClasses = [...panel.querySelectorAll("input:checked")].map((el) => el.value);
+          renderNiceClassTrigger();
+        });
+      });
+      document.addEventListener("click", () => wrap.classList.remove("open"));
+      renderNiceClassTrigger();
+    }
+
+    function renderNiceClassTrigger() {
+      const trigger = document.getElementById("niceClassTrigger");
+      if (!selectedNiceClasses.length) {
+        trigger.innerHTML = `<span class="ms-placeholder">请选择商标类别（可多选）</span>`;
+        return;
+      }
+      trigger.innerHTML = selectedNiceClasses.map((label) =>
+        `<span class="ms-tag">${label}<button type="button" data-n="${label}" title="移除">×</button></span>`
+      ).join("");
+      trigger.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const n = btn.dataset.n;
+          selectedNiceClasses = selectedNiceClasses.filter((x) => x !== n);
+          const cb = document.querySelector(`#niceClassPanel input[value="${n}"]`);
+          if (cb) cb.checked = false;
+          renderNiceClassTrigger();
+        });
+      });
+    }
+
+    function setNiceClasses(values) {
+      const list = (Array.isArray(values) ? values : String(values || "").split(/[,，\s]+/))
+        .map(toNiceClassLabel)
+        .filter(Boolean);
+      selectedNiceClasses = [...new Set(list)];
+      document.querySelectorAll("#niceClassPanel input[type=checkbox]").forEach((cb) => {
+        cb.checked = selectedNiceClasses.includes(cb.value);
+      });
+      renderNiceClassTrigger();
+    }
+
+    function fillForm(row) {
+      document.getElementById("fBrandCode").value = row.brandCode || "";
+      document.getElementById("fCompany").value = row.company || "";
+      document.getElementById("fApplicantForm").value = row.applicant || "";
+      document.getElementById("fDept").value = row.dept || "";
+      document.getElementById("fRegistrar").value = row.registrar || "";
+      setSelectValue("fRightType", row.rightType);
+      setSelectValue("fTmType", row.tmType);
+      document.getElementById("fTmName").value = row.tmName || "";
+      setSelectValue("fRegion", row.region);
+      document.getElementById("fUser1").value = row.user1 || "";
+      setSelectValue("fFilingPlatform1", row.filingPlatform1);
+      document.getElementById("fFilingAccount1").value = row.filingAccount1 || "";
+      document.getElementById("fAuthAccount1").value = row.authAccount1 || "";
+      document.getElementById("fUser2").value = row.user2 || "";
+      setSelectValue("fFilingPlatform2", row.filingPlatform2);
+      document.getElementById("fFilingAccount2").value = row.filingAccount2 || "";
+      document.getElementById("fAuthAccount2").value = row.authAccount2 || "";
+      setNiceClasses(row.niceClass || []);
+      document.getElementById("fApplyDate").value = row.applyDate || "";
+      document.getElementById("fRegDate").value = row.regDate || "";
+      document.getElementById("fOathDate").value = row.oathDate || "";
+      document.getElementById("fExpireDate").value = row.expireDate || "";
+      document.getElementById("fWarnDate").value = row.warnDate || "";
+      document.getElementById("fApplyNo").value = row.applyNo || "";
+      document.getElementById("fRegNo").value = row.regNo || "";
+      setSelectValue("fProgressForm", row.progress);
+      setSelectValue("fRenewForm", row.renew);
+      setSelectValue("fOathForm", row.oath);
+      document.getElementById("fRenewAgent").value = row.renewAgent || "";
+      document.getElementById("fOathAgent").value = row.oathAgent || "";
+      document.getElementById("fPassRate").value = String(row.passRate || "").replace(/%/g, "");
+      document.getElementById("fEmail").value = row.email || "";
+      document.getElementById("fRemark").value = row.remark || "";
+    }
+
+    function openAddForm() {
+      formMode = "add";
+      document.getElementById("formTitle").textContent = "添加";
+      // 添加时不展示品牌编码（注册成功后由系统生成）
+      document.getElementById("fieldBrandCode").classList.add("hidden");
+      document.getElementById("fBrandCode").value = "";
+      // 申请人/所属部门默认当前登录人，可修改
+      document.getElementById("fApplicantForm").value = currentUser.name;
+      document.getElementById("fDept").value = currentUser.dept;
+      setSelectValue("fRightType", "");
+      setSelectValue("fFilingPlatform1", "");
+      setSelectValue("fFilingPlatform2", "");
+      setSelectValue("fProgressForm", "");
+      setSelectValue("fRenewForm", "");
+      setSelectValue("fOathForm", "");
+      setNiceClasses([]);
+      document.getElementById("addModal").style.display = "flex";
+    }
+
+    function openEditForm() {
+      const names = selectedNames();
+      if (!names.length) {
+        toast("请先勾选要编辑的记录");
+        return;
+      }
+      formMode = "edit";
+      document.getElementById("formTitle").textContent = "编辑";
+      document.getElementById("fieldBrandCode").classList.remove("hidden");
+      const first = names[0];
+      const row = rows.find((r) => `${r.tmName}-${r.niceClass}` === first) || rows[0];
+      fillForm(row);
+      document.getElementById("addModal").style.display = "flex";
+    }
+
+    function closeAddForm() {
+      document.getElementById("addModal").style.display = "none";
+    }
+
+    function confirmAdd() {
+      if (!selectedNiceClasses.length) {
+        toast("请选择商标类别（必填，可多选）");
+        return;
+      }
+      closeAddForm();
+      toast(formMode === "add"
+        ? `已添加（类别：${selectedNiceClasses.join("、")}，多类将拆行）`
+        : "已保存编辑");
+    }
+
+    document.getElementById("modal").addEventListener("click", (e) => {
+      if (e.target.id === "modal") closeModal();
+    });
+    document.getElementById("addModal").addEventListener("click", (e) => {
+      if (e.target.id === "addModal") closeAddForm();
+    });
+
+    function syncDateRangeText() {
+      const start = document.getElementById("fStart").value;
+      const end = document.getElementById("fEnd").value;
+      const box = document.getElementById("dateRangeBox");
+      const text = document.getElementById("dateRangeText");
+      if (!start && !end) {
+        text.textContent = "开始日期 - 结束日期";
+        box.classList.remove("has-value");
+      } else {
+        text.textContent = `${start || "开始日期"} - ${end || "结束日期"}`;
+        box.classList.add("has-value");
+      }
+    }
+
+    document.getElementById("fStart").addEventListener("change", syncDateRangeText);
+    document.getElementById("fEnd").addEventListener("change", syncDateRangeText);
+
+    function doSearch() {
+      const timeType = document.getElementById("fTimeType").selectedOptions[0].text;
+      const parts = [
+        document.getElementById("fPlatform").value && `备案平台=${document.getElementById("fPlatform").value}`,
+        document.getElementById("fProgress").value && `申请进度=${document.getElementById("fProgress").value}`,
+        document.getElementById("fApplicant").value && `申请人=${document.getElementById("fApplicant").value}`,
+        document.getElementById("fDept").value && `所属部门=${document.getElementById("fDept").value}`,
+        (document.getElementById("fStart").value || document.getElementById("fEnd").value) &&
+          `${timeType}=${document.getElementById("fStart").value || "开始"}~${document.getElementById("fEnd").value || "结束"}`,
+        document.getElementById("q").value && `${document.getElementById("qField").selectedOptions[0].text}=${document.getElementById("q").value}`,
+        document.getElementById("fRenew").value && `续展状态=${document.getElementById("fRenew").value}`,
+        document.getElementById("fOath").value && `宣誓状态=${document.getElementById("fOath").value}`,
+      ].filter(Boolean);
+      toast(parts.length ? `搜索：${parts.join("；")}` : "搜索：全部");
+    }
+
+    function doClear() {
+      ["fPlatform", "fProgress", "fApplicant", "fDept", "fRenew", "fOath", "fStart", "fEnd", "q"].forEach((id) => {
+        document.getElementById(id).value = "";
+      });
+      document.getElementById("qField").value = "tmName";
+      document.getElementById("fTimeType").value = "apply";
+      syncDateRangeText();
+      toast("已清空搜索条件");
+    }
+
+    initNiceClassMultiSelect();
+    render();
+
+    if (new URLSearchParams(location.search).has("embed")) {
+      const title = document.querySelector(".title");
+      if (title) title.style.display = "none";
+      document.body.style.background = "transparent";
+      window.parent && window.parent.postMessage({ type: "brandManageReady" }, "*");
+    }
+  </script>
+</body>
+</html>

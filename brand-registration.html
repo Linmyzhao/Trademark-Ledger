@@ -1,0 +1,2176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>品牌注册</title>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --surface: #fff;
+      --ink: #1f2329;
+      --muted: #646a73;
+      --line: #e5e6eb;
+      --line2: #c9cdd4;
+      --accent: #1677ff;
+      --accent-hover: #4096ff;
+      --accent-soft: #e6f4ff;
+      --danger: #ff4d4f;
+      --ok: #52c41a;
+      --ok-bg: #f6ffed;
+      --ok-bd: #b7eb8f;
+      --warn: #faad14;
+      --header: #1d39c4;
+      --section: #2f54eb;
+      --label-bg: #e6f4ff;
+      --input-bg: #fffbe6;
+      --radius: 6px;
+      --shadow: 0 6px 16px rgba(0,0,0,.08);
+      --font: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: #fff;
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .page { padding: 16px 20px 28px; max-width: 100%; margin: 0 auto; }
+    .title-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px; gap: 12px; flex-wrap: wrap;
+    }
+    .title-bar h1 { margin: 0; font-size: 16px; font-weight: 650; color: #1f2329; }
+    .title-bar .hint { color: var(--muted); font-size: 12px; }
+
+    /* search — domain-mgmt style */
+    .card {
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      padding: 0;
+      margin-bottom: 12px;
+    }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 12px;
+      align-items: center;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%; height: 32px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      padding: 0 11px;
+      font: inherit;
+      background: #fff;
+      color: var(--ink);
+    }
+    .field textarea { height: auto; min-height: 72px; padding: 8px 11px; resize: vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(22,119,255,.15);
+    }
+    input:disabled, select:disabled, textarea:disabled {
+      background: #f5f5f5; color: var(--muted); cursor: not-allowed;
+    }
+
+    /* time search: separate pills like domain register */
+    .pill-select {
+      appearance: none;
+      -webkit-appearance: none;
+      height: 30px;
+      min-width: 110px;
+      max-width: 140px;
+      border: 1px solid #d9d9d9;
+      border-radius: 15px;
+      padding: 0 26px 0 12px;
+      background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2386909c'/%3E%3C/svg%3E") no-repeat right 10px center;
+      font: inherit;
+      font-size: 13px;
+      color: #1f2329;
+      outline: none;
+      cursor: pointer;
+    }
+    .pill-select:focus { border-color: #1677ff; }
+    .pill-select.wide { min-width: 120px; max-width: 180px; }
+    .date-range {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      height: 30px;
+      width: 200px;
+      border: 1px solid #d9d9d9;
+      border-radius: 15px;
+      padding: 0 12px;
+      background: #fff;
+      color: #bfbfbf;
+      cursor: pointer;
+      user-select: none;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .date-range.has-value { color: #1f2329; }
+    .date-range:focus-within { border-color: #1677ff; }
+    .date-range input[type="date"] {
+      position: absolute;
+      top: 0; bottom: 0;
+      opacity: 0;
+      width: 50%;
+      height: 100%;
+      cursor: pointer;
+      border: none;
+      padding: 0;
+      margin: 0;
+    }
+    .date-range #qDateFrom { left: 0; }
+    .date-range #qDateTo { left: 50%; }
+    .date-range .range-text {
+      pointer-events: none;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    /* text search combo remains joined */
+    .sg {
+      display: inline-flex;
+      align-items: stretch;
+      height: 30px;
+      border: 1px solid #d9d9d9;
+      border-radius: 15px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .sg:focus-within { border-color: #1677ff; }
+    .sg-select {
+      appearance: none;
+      -webkit-appearance: none;
+      height: 100%;
+      border: none;
+      border-right: 1px solid #d9d9d9;
+      background: #fafafa;
+      padding: 0 8px;
+      font: inherit;
+      font-size: 13px;
+      color: #86909c;
+      cursor: pointer;
+      min-width: 96px;
+      max-width: 110px;
+      outline: none;
+    }
+    .sg-body {
+      display: inline-flex;
+      align-items: center;
+      padding: 0 10px;
+      min-width: 160px;
+    }
+    .sg-body input {
+      border: none;
+      outline: none;
+      height: 28px;
+      padding: 0;
+      font: inherit;
+      font-size: 13px;
+      background: transparent;
+      color: #1f2329;
+      box-shadow: none;
+      width: 100%;
+      min-width: 0;
+    }
+    .sg-body input::placeholder { color: #bfbfbf; }
+    .filter-actions { display: flex; gap: 8px; align-items: center; margin-left: 2px; }
+    .btn {
+      height: 32px; padding: 0 16px; border-radius: 16px;
+      border: 1px solid #d0d5dd; background: #fff;
+      font: inherit; cursor: pointer; display: inline-flex;
+      align-items: center; gap: 4px; white-space: nowrap;
+      color: #1f2329;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn.primary:hover { background: var(--accent-hover); color: #fff; }
+    .btn.danger { color: var(--danger); border-color: #ffccc7; background: #fff; border-radius: 4px; }
+    .btn.danger:hover { background: #fff2f0; color: var(--danger); }
+    .btn.link {
+      border: none; color: #1f2329; padding: 0 8px; height: auto;
+      background: transparent; border-radius: 0;
+    }
+    .btn.link:hover { color: var(--accent); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; color: var(--muted); border-color: var(--line); }
+    .btn:disabled:hover { color: var(--muted); border-color: var(--line); background: #fff; }
+    .toolbar .btn { border-radius: 4px; }
+
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 12px; }
+
+    /* table — domain-mgmt dense key/value cells */
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid #e5e6eb;
+      border-radius: 4px;
+      background: #fff;
+    }
+    table.list {
+      width: 100%; border-collapse: collapse; min-width: 1280px;
+      table-layout: fixed;
+    }
+    col.c-check { width: 44px; }
+    col.c-subject { width: 12%; }
+    col.c-tm { width: 14%; }
+    col.c-use { width: 14%; }
+    col.c-fee { width: 8%; }
+    col.c-attach { width: 12%; }
+    col.c-status { width: 10%; }
+    col.c-audit { width: 14%; }
+    col.c-sys { width: 12%; }
+    col.c-ops { width: 72px; }
+    table.list th, table.list td {
+      border-bottom: 1px solid #e5e6eb;
+      border-right: 1px solid #e5e6eb;
+      padding: 12px 14px;
+      text-align: left;
+      vertical-align: top;
+    }
+    table.list th:last-child,
+    table.list td:last-child { border-right: none; }
+    table.list th {
+      background: #f7f8fa;
+      font-weight: 600;
+      color: #4e5969;
+      font-size: 13px;
+      white-space: nowrap;
+      position: sticky; top: 0; z-index: 1;
+    }
+    table.list tr:hover td { background: #fafbfc; }
+    table.list tr.selected td { background: #f0f7ff; }
+    .kv {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+      line-height: 1.55;
+      white-space: normal;
+      min-width: 0;
+    }
+    .kv .row { display: flex; gap: 4px; align-items: baseline; }
+    .kv .k { color: #86909c; flex-shrink: 0; }
+    .kv .v { color: #1f2329; word-break: break-all; }
+    .tag {
+      display: inline-block; padding: 0 8px; height: 22px; line-height: 20px;
+      border-radius: 4px; font-size: 12px; border: 1px solid transparent;
+    }
+    .tag.ok { background: #f6ffed; border-color: #b7eb8f; color: #389e0d; }
+    .tag.info { background: #e6f4ff; border-color: #91caff; color: #0958d9; }
+    .tag.warn { background: #fff7e6; border-color: #ffd591; color: #d46b08; }
+    .tag.gray { background: #f5f5f5; border-color: #d9d9d9; color: #86909c; }
+    table.list th.ops,
+    table.list td.ops {
+      vertical-align: middle;
+      text-align: center;
+      width: 72px;
+      padding: 12px 8px;
+      white-space: nowrap;
+    }
+    td.ops .link-btn {
+      border: none;
+      background: none;
+      color: #1677ff;
+      cursor: pointer;
+      padding: 0;
+      font-size: 13px;
+      font-family: inherit;
+      line-height: 1.2;
+    }
+    td.ops .link-btn:hover { color: #4096ff; }
+    .radio-row {
+      display: flex; align-items: center; gap: 20px;
+      min-height: 32px;
+    }
+    .radio-row label {
+      display: inline-flex; align-items: center; gap: 6px;
+      cursor: pointer; font-size: 13px; color: #1f2329;
+    }
+    #rejectBlock { display: none; }
+    #rejectBlock.show { display: block; }
+    .empty {
+      text-align: center; padding: 48px; color: var(--muted);
+    }
+    .pager {
+      display: flex; justify-content: flex-end; align-items: center;
+      padding: 10px 2px 0; color: #86909c; font-size: 12px;
+    }
+
+    /* modal — same as domain/email 申请注册 */
+    .mask {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000; padding: 24px 16px;
+      overflow: auto;
+    }
+    .mask.show { display: flex; }
+    .modal {
+      width: min(920px, 96vw);
+      max-height: 90vh;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 6px 16px rgba(0,0,0,.12);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      margin: auto;
+      padding: 0;
+    }
+    .modal.sm { width: min(480px, 96vw); max-height: none; border-radius: 8px; }
+    .modal-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      flex-shrink: 0;
+    }
+    .modal-hd h2 {
+      margin: 0; font-size: 16px; font-weight: 600; color: #1f2329;
+      border-left: 3px solid #1677ff; padding-left: 10px; line-height: 1.2;
+    }
+    .modal-close {
+      width: 28px; height: 28px; border: 1px solid #d0d5dd; background: #fff;
+      font-size: 16px; line-height: 1; cursor: pointer; color: #86909c;
+      border-radius: 4px;
+    }
+    .modal-close:hover { color: #1f2329; border-color: #1677ff; }
+    .modal-bd { padding: 12px 24px 8px; overflow: auto; flex: 1; background: #fff; }
+    .modal-ft {
+      display: flex; justify-content: flex-end; gap: 8px;
+      padding: 10px 20px;
+      border-top: 1px solid #f0f0f0;
+      flex-shrink: 0;
+      background: #fff;
+    }
+    .modal-ft .btn { border-radius: 4px; }
+
+    /* form — horizontal label + 3-col grid (domain apply style) */
+    .app-form { padding: 0 0 8px; }
+    .form-tip {
+      background: #e6f4ff;
+      border: 1px solid #91caff;
+      border-radius: 6px;
+      color: #1677ff;
+      font-size: 13px;
+      padding: 8px 12px;
+      margin-bottom: 14px;
+      line-height: 1.55;
+    }
+    .form-sec { margin-bottom: 16px; }
+    .form-sec h4 {
+      margin: 0 0 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1f2329;
+      border-left: 3px solid #1677ff;
+      padding-left: 8px;
+      line-height: 1.2;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      column-gap: 16px;
+      row-gap: 14px;
+    }
+    .form-grid.cols-1 { grid-template-columns: 1fr; }
+    .field {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .field.full { grid-column: 1 / -1; }
+    .field.span-2 { grid-column: span 2; }
+    .field > label {
+      font-size: 13px;
+      color: #1f2329;
+      text-align: right;
+      line-height: 1.3;
+      font-weight: 400;
+    }
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      height: 32px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      padding: 0 11px;
+      background: #fff;
+      font: inherit;
+      color: #1f2329;
+      outline: none;
+    }
+    .field textarea {
+      height: auto;
+      min-height: 72px;
+      padding: 8px 11px;
+      line-height: 1.5;
+      resize: vertical;
+      align-self: start;
+    }
+    .field.top { align-items: start; }
+    .field.top > label { padding-top: 8px; }
+    .field input::placeholder,
+    .field textarea::placeholder { color: #bfbfbf; }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: #1677ff;
+      box-shadow: 0 0 0 2px rgba(22,119,255,.12);
+    }
+    .field input:disabled,
+    .field select:disabled {
+      background: #f5f5f5;
+      color: #86909c;
+      cursor: not-allowed;
+    }
+    .req { color: #ff4d4f; margin-right: 2px; }
+    .field-hint {
+      font-size: 11px;
+      color: #86909c;
+      grid-column: 2;
+      margin-top: -2px;
+      line-height: 1.4;
+    }
+    .route-box {
+      margin-top: 4px;
+      padding: 8px 12px;
+      background: #e6f4ff;
+      border: 1px solid #91caff;
+      border-radius: 6px;
+      color: #1677ff;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .msel {
+      position: relative;
+      width: 100%;
+      min-width: 0;
+    }
+    .msel-trigger {
+      box-sizing: border-box;
+      width: 100%;
+      height: 32px;
+      padding: 0 28px 0 4px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      background: #fff;
+      color: #1f2329;
+      font: inherit;
+      font-size: 13px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow: hidden;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .msel-trigger::after {
+      content: "";
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-right: 1.5px solid #86909c;
+      border-bottom: 1.5px solid #86909c;
+      transform: translateY(-70%) rotate(45deg);
+      pointer-events: none;
+    }
+    .msel .msel-trigger { position: relative; }
+    .msel.open .msel-trigger::after {
+      transform: translateY(-20%) rotate(-135deg);
+    }
+    .msel-trigger:hover { border-color: #1677ff; }
+    .msel.open .msel-trigger {
+      border-color: #1677ff;
+      box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.12);
+    }
+    .msel-placeholder {
+      color: #bfbfbf;
+      padding-left: 7px;
+      white-space: nowrap;
+    }
+    .msel-tag {
+      display: inline-flex;
+      align-items: center;
+      max-width: calc(100% - 40px);
+      height: 22px;
+      padding: 0 4px 0 8px;
+      border-radius: 4px;
+      background: #f5f5f5;
+      color: #1f2329;
+      font-size: 12px;
+      line-height: 22px;
+      gap: 2px;
+      flex-shrink: 1;
+      min-width: 0;
+    }
+    .msel-tag-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .msel-tag-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      border: none;
+      border-radius: 2px;
+      background: transparent;
+      color: #8c8c8c;
+      font-size: 12px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .msel-tag-close:hover { color: #1f2329; background: #e8e8e8; }
+    .msel-rest {
+      display: inline-flex;
+      align-items: center;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 4px;
+      background: #f5f5f5;
+      color: #1f2329;
+      font-size: 12px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .msel-panel {
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 4px);
+      z-index: 40;
+      box-sizing: border-box;
+      width: 100%;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      background: #fff;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      padding: 4px 0;
+      text-align: left;
+      overflow: hidden;
+    }
+    .msel.open .msel-panel { display: block; }
+    .msel-options {
+      display: block;
+      max-height: 240px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+    .msel-option {
+      box-sizing: border-box;
+      position: relative;
+      display: block;
+      width: 100%;
+      padding: 5px 28px 5px 11px;
+      font-size: 13px;
+      line-height: 22px;
+      color: #1f2329;
+      cursor: pointer;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      user-select: none;
+    }
+    .msel-option:hover {
+      background: #1677ff;
+      color: #fff;
+    }
+    .msel-option.selected {
+      color: #1677ff;
+      background: transparent;
+    }
+    .msel-option.selected:hover {
+      background: #1677ff;
+      color: #fff;
+    }
+    .msel-option.selected::after {
+      content: "";
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      width: 12px;
+      height: 12px;
+      transform: translateY(-50%);
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%231677ff' stroke-width='1.8' d='M2.2 6.2L4.8 8.8 9.8 3.2'/%3E%3C/svg%3E") center / contain no-repeat;
+    }
+    .msel-option.selected:hover::after {
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='1.8' d='M2.2 6.2L4.8 8.8 9.8 3.2'/%3E%3C/svg%3E") center / contain no-repeat;
+    }
+    .img-upload {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .img-upload-box {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      border: 1px dashed #d9d9d9;
+      border-radius: 6px;
+      background: #fafafa;
+      cursor: pointer;
+      outline: none;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .img-upload-box:hover,
+    .img-upload-box:focus {
+      border-color: #1677ff;
+      background: #f5f9ff;
+    }
+    .img-upload-box.has-file {
+      border-style: solid;
+      background: #fff;
+    }
+    .img-upload-plus {
+      width: 28px;
+      height: 28px;
+      position: relative;
+      pointer-events: none;
+    }
+    .img-upload-plus::before,
+    .img-upload-plus::after {
+      content: "";
+      position: absolute;
+      background: #bfbfbf;
+      border-radius: 1px;
+    }
+    .img-upload-plus::before {
+      left: 50%;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      transform: translateX(-50%);
+    }
+    .img-upload-plus::after {
+      top: 50%;
+      left: 4px;
+      right: 4px;
+      height: 2px;
+      transform: translateY(-50%);
+    }
+    .img-upload-box:hover .img-upload-plus::before,
+    .img-upload-box:hover .img-upload-plus::after,
+    .img-upload-box:focus .img-upload-plus::before,
+    .img-upload-box:focus .img-upload-plus::after {
+      background: #1677ff;
+    }
+    .img-upload-box.has-file .img-upload-plus { display: none; }
+    .img-upload-preview {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+    .img-upload-box.has-file .img-upload-preview { display: block; }
+    .img-upload-clear {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 18px;
+      height: 18px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.45);
+      color: #fff;
+      font-size: 12px;
+      line-height: 18px;
+      padding: 0;
+      cursor: pointer;
+      display: none;
+      z-index: 2;
+    }
+    .img-upload-box.has-file:hover .img-upload-clear { display: block; }
+    .img-upload-hint {
+      color: #595959;
+      font-size: 12px;
+      line-height: 1.4;
+      user-select: none;
+    }
+    .img-upload-name {
+      color: #86909c;
+      font-size: 12px;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: none;
+    }
+    .img-upload-name.show { display: block; }
+    .img-upload input[type="file"] {
+      position: absolute;
+      width: 0;
+      height: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .link-file {
+      color: #1677ff;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .link-file:hover { text-decoration: underline; }
+    .toast {
+      position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,.78); color: #fff; padding: 8px 16px;
+      border-radius: 4px; z-index: 2000; display: none; font-size: 13px;
+    }
+    .toast.show { display: block; }
+    .import-tips {
+      padding: 16px 18px; color: var(--muted); font-size: 13px;
+    }
+    .import-tips ol { margin: 8px 0 0; padding-left: 18px; }
+    .flow-mini {
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+      font-size: 12px; color: var(--muted); margin-top: 6px;
+    }
+    .flow-mini .step {
+      background: #f5f5f5; border: 1px solid var(--line); border-radius: 4px;
+      padding: 2px 8px; color: var(--ink);
+    }
+    .flow-mini .step.on { background: var(--accent-soft); border-color: #91caff; color: #0958d9; }
+    .flow-mini .arrow { color: var(--line2); }
+
+    @media (max-width: 960px) {
+      .sg-body { min-width: 140px; }
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .field.span-2, .field.full { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="title-bar">
+      <h1>品牌注册</h1>
+      <div class="hint">当前登录人：<b id="loginUser">张三</b></div>
+    </div>
+
+    <!-- 搜索区 -->
+    <div class="card">
+      <div class="filters">
+        <select class="pill-select wide" id="qApplicant" title="申请人">
+          <option value="">申请人</option>
+        </select>
+        <select class="pill-select wide" id="qDept" title="所属部门">
+          <option value="">所属部门</option>
+        </select>
+        <select class="pill-select" id="qProgress" title="申请状态">
+          <option value="">申请状态</option>
+          <option value="待部门审核">待部门审核</option>
+          <option value="待品牌营销部审核">待品牌营销部审核</option>
+          <option value="已驳回">已驳回</option>
+        </select>
+        <select class="pill-select" id="qDateField" title="日期类型">
+          <option value="createTime">创建日期</option>
+          <option value="updateTime">更新日期</option>
+        </select>
+        <div class="date-range" id="dateRangeBox" title="开始日期 - 结束日期">
+          <span class="range-text" id="dateRangeText">开始日期 - 结束日期</span>
+          <input type="date" id="qDateFrom" />
+          <input type="date" id="qDateTo" />
+        </div>
+
+        <div class="sg" title="文字搜索">
+          <select class="sg-select" id="qTextField">
+            <option value="name">商标名称</option>
+            <option value="brandCode">品牌编码</option>
+            <option value="user">使用人1</option>
+            <option value="platform">备案平台1</option>
+            <option value="account">备案账号1</option>
+            <option value="deptAuditor">部门审核人</option>
+          </select>
+          <div class="sg-body">
+            <input id="qText" type="text" placeholder="请输入" />
+          </div>
+        </div>
+
+        <div class="filter-actions">
+          <button class="btn primary" type="button" onclick="doSearch()">搜索</button>
+          <button class="btn link" type="button" onclick="resetSearch()">清空</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 工具栏 -->
+    <div class="toolbar">
+      <button class="btn primary" type="button" onclick="openForm('add')">申请注册</button>
+      <button class="btn" type="button" id="btnEdit" onclick="editSelected()">编辑</button>
+      <button class="btn danger" type="button" id="btnDel" onclick="deleteSelected()">删除</button>
+      <button class="btn" type="button" id="btnDeptAudit" onclick="openAudit('dept')">部门审核</button>
+      <button class="btn" type="button" id="btnBrandAudit" onclick="openAudit('brand')">品牌营销部审核</button>
+      <button class="btn" type="button" onclick="openImport()">导入</button>
+      <button class="btn" type="button" onclick="exportCsv()">导出</button>
+    </div>
+
+    <!-- 列表 -->
+    <div class="table-wrap">
+      <table class="list">
+        <colgroup>
+          <col class="c-check" />
+          <col class="c-subject" />
+          <col class="c-tm" />
+          <col class="c-use" />
+          <col class="c-fee" />
+          <col class="c-attach" />
+          <col class="c-status" />
+          <col class="c-audit" />
+          <col class="c-sys" />
+          <col class="c-ops" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="checkAll" onclick="toggleAll(this)" /></th>
+            <th>权利主体</th>
+            <th>商标标识</th>
+            <th>使用信息</th>
+            <th>分类与费用</th>
+            <th>董事长审批附件</th>
+            <th>申请状态</th>
+            <th>审核信息</th>
+            <th>系统信息</th>
+            <th class="ops">操作</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="empty" style="display:none">暂无数据，请点击「申请注册」或「导入」</div>
+    </div>
+    <div class="pager">
+      <span id="pageInfo">共 0 条 · 每页 10 条 · 1 / 1</span>
+    </div>
+  </div>
+
+  <!-- 申请注册 / 编辑弹窗（样式对齐域名注册申请） -->
+  <div class="mask" id="formMask">
+    <div class="modal">
+      <div class="modal-hd">
+        <h2 id="formTitle">申请注册</h2>
+        <button class="modal-close" type="button" onclick="closeForm()" title="关闭">×</button>
+      </div>
+      <div class="modal-bd">
+        <div class="app-form">
+          <div class="form-tip" id="formTip">
+            申请注册：申请人默认当前登录人，可修改；所属部门取申请人二级部门（只读）。
+          </div>
+
+          <div class="form-sec">
+            <h4>权利主体</h4>
+            <div class="form-grid">
+              <div class="field">
+                <label><span class="req">*</span>申请人</label>
+                <select id="fApplicant"></select>
+              </div>
+              <div class="field">
+                <label><span class="req">*</span>所属部门</label>
+                <input id="fDept" type="text" disabled title="申请人二级部门（只读）" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-sec">
+            <h4>商标标识</h4>
+            <div class="form-grid">
+              <div class="field">
+                <label><span class="req">*</span>商标类型</label>
+                <select id="fTypes">
+                  <option value="">请选择</option>
+                  <option value="文字">文字</option>
+                  <option value="图形">图形</option>
+                  <option value="组合">组合</option>
+                  <option value="声音">声音</option>
+                  <option value="颜色">颜色</option>
+                </select>
+              </div>
+              <div class="field">
+                <label><span class="req">*</span>商标名称</label>
+                <input id="fName" type="text" placeholder="标样原文 / 图形描述" />
+              </div>
+              <div class="field">
+                <label><span class="req">*</span>国别/地区</label>
+                <select id="fCountry">
+                  <option value="">请选择</option>
+                  <option>CN</option>
+                  <option>US</option>
+                  <option>EU</option>
+                  <option>JP</option>
+                  <option>GB</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-sec">
+            <h4>使用信息</h4>
+            <div class="form-grid">
+              <div class="field">
+                <label><span class="req">*</span>使用人1</label>
+                <select id="fUser">
+                  <option value="">请选择</option>
+                </select>
+              </div>
+              <div class="field">
+                <label><span class="req">*</span>备案平台1</label>
+                <select id="fPlatform">
+                  <option value="">请选择</option>
+                  <option>亚马逊</option>
+                  <option>速卖通</option>
+                  <option>eBay</option>
+                  <option>Shopee</option>
+                </select>
+              </div>
+              <div class="field">
+                <label><span class="req">*</span>备案账号1</label>
+                <input id="fAccount" type="text" placeholder="如 xy_brand_cn" />
+              </div>
+              <div class="field">
+                <label><span class="req">*</span>授权账号1</label>
+                <input id="fAuthAccount" type="text" placeholder="如 xy_auth_01" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-sec">
+            <h4>分类与费用</h4>
+            <div class="form-grid">
+              <div class="field">
+                <label><span class="req">*</span>商标类别</label>
+                <div class="msel" id="fCategories" data-placeholder="请选择（可多选）">
+                  <button type="button" class="msel-trigger" aria-haspopup="listbox">
+                    <span class="msel-placeholder">请选择（可多选）</span>
+                  </button>
+                  <div class="msel-panel" role="listbox">
+                    <div class="msel-options" id="fCategoriesOptions"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-sec">
+            <h4>董事长审批附件</h4>
+            <div class="form-grid cols-1">
+              <div class="field full top" style="grid-template-columns: 96px 1fr;">
+                <label><span class="req">*</span>附件</label>
+                <div class="img-upload" id="attachUpload">
+                  <div
+                    class="img-upload-box"
+                    id="pasteZone"
+                    tabindex="0"
+                    role="button"
+                    title="点击上传或 Ctrl+V 粘贴图片"
+                  >
+                    <span class="img-upload-plus" aria-hidden="true"></span>
+                    <img id="fAttachPreview" class="img-upload-preview" alt="附件预览" />
+                    <button type="button" class="img-upload-clear" id="attachClear" title="清除">×</button>
+                    <input id="fFile" type="file" accept="image/*" />
+                  </div>
+                  <div class="img-upload-hint">单击此处Ctrl+V可粘贴图片</div>
+                  <div class="img-upload-name" id="fFileName"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn" type="button" onclick="closeForm()">取消</button>
+        <button class="btn primary" type="button" onclick="saveForm()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 导入弹窗 -->
+  <div class="mask" id="importMask">
+    <div class="modal sm">
+      <div class="modal-hd">
+        <h2>导入申请</h2>
+        <button class="modal-close" type="button" onclick="closeImport()">×</button>
+      </div>
+      <div class="modal-bd">
+        <div class="import-tips">
+          请上传 Excel（.xlsx / .xls）或 CSV。原型仅模拟导入 1 条示例数据。
+          <ol>
+            <li>必填列：商标类型、商标名称、国别/地区、商标类别、使用平台、使用账号</li>
+            <li>申请人 / 申请部门 / 申请日期由系统自动带出</li>
+            <li>附件需导入后在编辑页单独上传</li>
+          </ol>
+          <div style="margin-top:14px">
+            <input type="file" id="importFile" accept=".xlsx,.xls,.csv" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn" type="button" onclick="closeImport()">取消</button>
+        <button class="btn primary" type="button" onclick="doImport()">开始导入</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认 -->
+  <div class="mask" id="delMask">
+    <div class="modal sm">
+      <div class="modal-hd">
+        <h2>确认删除</h2>
+        <button class="modal-close" type="button" onclick="closeDel()">×</button>
+      </div>
+      <div class="modal-bd">
+        <div class="import-tips" id="delText">确定删除所选申请记录？删除后不可恢复。</div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn" type="button" onclick="closeDel()">取消</button>
+        <button class="btn danger" type="button" onclick="confirmDelete()">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 审核弹窗（部门审核 / 品牌营销部审核） -->
+  <div class="mask" id="auditMask">
+    <div class="modal sm">
+      <div class="modal-hd">
+        <h2 id="auditTitle">部门审核</h2>
+        <button class="modal-close" type="button" onclick="closeAudit()">×</button>
+      </div>
+      <div class="modal-bd">
+        <div class="app-form" style="padding:4px 0 8px">
+          <div class="form-tip" id="auditTip">请选择审核结果</div>
+          <div class="sec" style="margin-bottom:16px">
+            <h3 class="sec-title">审核结果</h3>
+            <div class="radio-row">
+              <label><input type="radio" name="auditResult" value="通过" checked onchange="toggleReject()" /> 通过</label>
+              <label><input type="radio" name="auditResult" value="驳回" onchange="toggleReject()" /> 驳回</label>
+            </div>
+          </div>
+          <div class="sec" id="rejectBlock">
+            <h3 class="sec-title">驳回备注</h3>
+            <div class="fields cols-1">
+              <div class="field">
+                <label><span class="req">*</span>驳回备注</label>
+                <textarea id="fRejectRemark" placeholder="请填写驳回原因"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn" type="button" onclick="closeAudit()">取消</button>
+        <button class="btn primary" type="button" onclick="saveAudit()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const CURRENT_USER = "张三";
+    const TODAY = new Date().toISOString().slice(0, 10);
+
+    // 模拟组织与审批路由
+    const ORG = {
+      user: CURRENT_USER,
+      deptL1: "品牌业务中心",
+      deptL2: "品牌营销部",
+      deptDisplay: "品牌业务中心 / 品牌营销部",
+      deptHead: "品牌营销部-李四",
+      hasL2Head: true,
+    };
+
+    // 申请人及其组织（所属部门 = 二级部门）
+    const APPLICANT_ORG = {
+      张三: { deptL1: "品牌业务中心", deptL2: "品牌营销部", deptDisplay: "品牌业务中心 / 品牌营销部", hasL2Head: true, deptHead: "品牌营销部-李四" },
+      王芳: { deptL1: "海外事业部", deptL2: "北美销售组", deptDisplay: "海外事业部 / 北美销售组", hasL2Head: true, deptHead: "北美销售组-赵强" },
+      陈晨: { deptL1: "供应链中心", deptL2: "仓储运营组", deptDisplay: "供应链中心 / 仓储运营组", hasL2Head: true, deptHead: "仓储运营组-周敏" },
+      李四: { deptL1: "品牌业务中心", deptL2: "品牌营销部", deptDisplay: "品牌业务中心 / 品牌营销部", hasL2Head: true, deptHead: "品牌营销部-李四" },
+      赵强: { deptL1: "海外事业部", deptL2: "北美销售组", deptDisplay: "海外事业部 / 北美销售组", hasL2Head: true, deptHead: "北美销售组-赵强" },
+      周敏: { deptL1: "供应链中心", deptL2: "仓储运营组", deptDisplay: "供应链中心 / 仓储运营组", hasL2Head: true, deptHead: "仓储运营组-周敏" },
+    };
+    const APPLICANT_OPTIONS = Object.keys(APPLICANT_ORG);
+
+    function getApplicantOrg(name) {
+      return (
+        APPLICANT_ORG[name] || {
+          deptL1: ORG.deptL1,
+          deptL2: ORG.deptL2,
+          deptDisplay: ORG.deptDisplay,
+          hasL2Head: ORG.hasL2Head,
+          deptHead: ORG.deptHead,
+        }
+      );
+    }
+
+    function fillApplicantOptions(selected) {
+      const sel = document.getElementById("fApplicant");
+      const opts = APPLICANT_OPTIONS.slice();
+      if (selected && !opts.includes(selected)) opts.unshift(selected);
+      sel.innerHTML =
+        '<option value="">请选择</option>' +
+        opts.map((u) => '<option value="' + u + '">' + u + "</option>").join("");
+      sel.value = selected || "";
+      syncApplicantDept();
+    }
+
+    function syncApplicantDept() {
+      const name = document.getElementById("fApplicant").value;
+      const org = name ? getApplicantOrg(name) : null;
+      document.getElementById("fDept").value = org ? org.deptL2 : "";
+    }
+
+    document.getElementById("fApplicant").addEventListener("change", syncApplicantDept);
+
+    // 使用人1 下拉选项（仅人名）
+    const USER_OPTIONS = ["李四", "赵强", "周敏", "刘洋", "陈静", "张三"];
+
+    function personName(v) {
+      if (!v) return "";
+      const s = String(v);
+      const i = s.lastIndexOf("-");
+      return i >= 0 ? s.slice(i + 1) : s;
+    }
+
+    function fillUserOptions(selected) {
+      const sel = document.getElementById("fUser");
+      const name = personName(selected);
+      const opts = USER_OPTIONS.slice();
+      if (name && !opts.includes(name)) opts.unshift(name);
+      sel.innerHTML =
+        '<option value="">请选择</option>' +
+        opts.map((u) => '<option value="' + u + '">' + u + "</option>").join("");
+      sel.value = name || "";
+    }
+    fillUserOptions("");
+    fillApplicantOptions(CURRENT_USER);
+
+    function fillSearchApplicantOptions() {
+      const sel = document.getElementById("qApplicant");
+      const cur = sel.value;
+      sel.innerHTML =
+        '<option value="">申请人</option>' +
+        APPLICANT_OPTIONS.map((u) => '<option value="' + u + '">' + u + "</option>").join("");
+      if (cur && APPLICANT_OPTIONS.includes(cur)) sel.value = cur;
+    }
+
+    function fillSearchDeptOptions() {
+      const sel = document.getElementById("qDept");
+      const cur = sel.value;
+      const depts = Array.from(
+        new Set(Object.values(APPLICANT_ORG).map((o) => o.deptL2))
+      );
+      sel.innerHTML =
+        '<option value="">所属部门</option>' +
+        depts.map((d) => '<option value="' + d + '">' + d + "</option>").join("");
+      if (cur && depts.includes(cur)) sel.value = cur;
+    }
+    fillSearchApplicantOptions();
+    fillSearchDeptOptions();
+
+    function resolveApprover(deptL1, hasL2Head, deptL2Head, deptL1Head) {
+      if (deptL1 === "品牌业务中心") {
+        return {
+          name: "品牌营销部负责人",
+          role: "路径A：品牌营销部二级部门负责人",
+          steps: ["提交", "品牌营销部负责人审核", "管理员办理", "完成"],
+          active: 1,
+        };
+      }
+      if (hasL2Head) {
+        return {
+          name: deptL2Head || "二级部门负责人",
+          role: "路径B：申请人对应二级部门负责人",
+          steps: ["提交", "二级部门负责人审核", "管理员办理", "完成"],
+          active: 1,
+        };
+      }
+      return {
+        name: deptL1Head || "一级部门负责人",
+        role: "兜底：无二级负责人 → 一级部门负责人",
+        steps: ["提交", "一级部门负责人审核", "管理员办理", "完成"],
+        active: 1,
+      };
+    }
+
+    let rows = [
+      {
+        id: 1,
+        dept: "品牌业务中心 / 品牌营销部",
+        deptL1: "品牌业务中心",
+        deptL2: "品牌营销部",
+        applicant: "张三",
+        applyDate: "2026-03-10",
+        types: ["文字"],
+        name: "星云",
+        brandCode: "CN2026031001",
+        country: "CN",
+        category: "25",
+        user: "李四",
+        platform: "亚马逊",
+        account: "xy_brand_cn",
+        authAccount: "xy_auth_01",
+        scene: "核心品牌站内投放与店铺备案",
+        fileName: "董事长审批截图.png",
+        progress: "待部门审核",
+        deptAuditResult: "",
+        deptAuditor: "",
+        deptAuditTime: "",
+        brandAuditResult: "",
+        brandAuditor: "",
+        brandAuditTime: "",
+        rejectRemark: "",
+        creator: "张三",
+        createTime: "2026-03-10 09:21:00",
+        updater: "张三",
+        updateTime: "2026-03-10 09:21:00",
+        routeRole: "路径A：品牌营销部二级部门负责人",
+      },
+      {
+        id: 2,
+        dept: "海外事业部 / 北美销售组",
+        deptL1: "海外事业部",
+        deptL2: "北美销售组",
+        applicant: "王芳",
+        applyDate: "2026-03-08",
+        types: ["组合"],
+        name: "NovaLite",
+        brandCode: "US2026030801",
+        country: "US",
+        category: "9",
+        user: "赵强",
+        platform: "亚马逊",
+        account: "nova_us_store",
+        authAccount: "nova_auth_us",
+        scene: "北美站商品详情页与品牌备案",
+        fileName: "approval_us.jpg",
+        progress: "待品牌营销部审核",
+        deptAuditResult: "通过",
+        deptAuditor: "赵强",
+        deptAuditTime: "2026-03-09 14:06:00",
+        brandAuditResult: "",
+        brandAuditor: "",
+        brandAuditTime: "",
+        rejectRemark: "",
+        creator: "王芳",
+        createTime: "2026-03-08 11:02:00",
+        updater: "赵强",
+        updateTime: "2026-03-09 14:06:00",
+        routeRole: "路径B：申请人对应二级部门负责人",
+      },
+      {
+        id: 3,
+        dept: "供应链中心 / 仓储运营组",
+        deptL1: "供应链中心",
+        deptL2: "仓储运营组",
+        applicant: "陈晨",
+        applyDate: "2026-02-28",
+        types: ["图形", "颜色"],
+        name: "仓易达图形标",
+        brandCode: "EU2026022801",
+        country: "EU",
+        category: "39",
+        user: "周敏",
+        platform: "速卖通",
+        account: "cangyida_eu",
+        authAccount: "cang_auth_eu",
+        scene: "物流品牌跨境店铺使用",
+        fileName: "mail_shot.png",
+        progress: "已驳回",
+        deptAuditResult: "驳回",
+        deptAuditor: "周敏",
+        deptAuditTime: "2026-03-01 16:40:00",
+        brandAuditResult: "",
+        brandAuditor: "",
+        brandAuditTime: "",
+        rejectRemark: "附件不清晰，请重新上传董事长审批截图",
+        creator: "陈晨",
+        createTime: "2026-02-28 10:15:00",
+        updater: "周敏",
+        updateTime: "2026-03-01 16:40:00",
+        routeRole: "兜底：无二级负责人 → 一级部门负责人",
+      },
+    ];
+
+    let mode = "add"; // add | edit
+    let editingId = null;
+    let pendingDeleteIds = [];
+    let auditingId = null;
+    let auditType = "dept"; // dept | brand
+    let filter = {};
+    let attachFileName = "";
+    let attachPreviewUrl = "";
+
+    function getMselSelected(root) {
+      return Array.from(root.querySelectorAll(".msel-option.selected")).map((el) => ({
+        value: el.dataset.value,
+        label: el.dataset.label || el.textContent.trim(),
+      }));
+    }
+
+    function syncMselTrigger(root) {
+      const trigger = root.querySelector(".msel-trigger");
+      const placeholder = root.dataset.placeholder || "请选择";
+      const selected = getMselSelected(root);
+      trigger.innerHTML = "";
+      if (!selected.length) {
+        const span = document.createElement("span");
+        span.className = "msel-placeholder";
+        span.textContent = placeholder;
+        trigger.appendChild(span);
+        trigger.title = "";
+        return;
+      }
+      const first = selected[0];
+      const tag = document.createElement("span");
+      tag.className = "msel-tag";
+      tag.innerHTML =
+        '<span class="msel-tag-text"></span><button type="button" class="msel-tag-close" title="移除" data-value="' +
+        first.value +
+        '">×</button>';
+      tag.querySelector(".msel-tag-text").textContent = first.label;
+      trigger.appendChild(tag);
+      if (selected.length > 1) {
+        const rest = document.createElement("span");
+        rest.className = "msel-rest";
+        rest.textContent = "+ " + (selected.length - 1);
+        trigger.appendChild(rest);
+      }
+      trigger.title = selected.map((s) => s.label).join("、");
+    }
+
+    function getMselValues(id) {
+      return getMselSelected(document.getElementById(id)).map((s) => s.value);
+    }
+
+    function setMselValues(id, values) {
+      const set = new Set((values || []).map(String));
+      const root = document.getElementById(id);
+      root.querySelectorAll(".msel-option").forEach((el) => {
+        el.classList.toggle("selected", set.has(el.dataset.value));
+      });
+      syncMselTrigger(root);
+    }
+
+    function toggleMselOption(root, value) {
+      const opt = root.querySelector('.msel-option[data-value="' + value + '"]');
+      if (!opt) return;
+      opt.classList.toggle("selected");
+      syncMselTrigger(root);
+    }
+
+    function syncMselPanelWidth(root) {
+      const trigger = root.querySelector(".msel-trigger");
+      const panel = root.querySelector(".msel-panel");
+      if (!trigger || !panel) return;
+      const w = Math.round(trigger.getBoundingClientRect().width);
+      panel.style.width = w + "px";
+      panel.style.minWidth = w + "px";
+      panel.style.maxWidth = w + "px";
+    }
+
+    function initMsel(root) {
+      const trigger = root.querySelector(".msel-trigger");
+      const panel = root.querySelector(".msel-panel");
+      trigger.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const closeBtn = e.target.closest(".msel-tag-close");
+        if (closeBtn) {
+          toggleMselOption(root, closeBtn.dataset.value);
+          return;
+        }
+        document.querySelectorAll(".msel.open").forEach((el) => {
+          if (el !== root) el.classList.remove("open");
+        });
+        root.classList.toggle("open");
+        if (root.classList.contains("open")) syncMselPanelWidth(root);
+      });
+      panel.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const opt = e.target.closest(".msel-option");
+        if (!opt) return;
+        opt.classList.toggle("selected");
+        syncMselTrigger(root);
+      });
+      syncMselTrigger(root);
+    }
+
+    // init category options 1-45
+    const catOptions = document.getElementById("fCategoriesOptions");
+    for (let i = 1; i <= 45; i++) {
+      const opt = document.createElement("div");
+      opt.className = "msel-option";
+      opt.dataset.value = String(i);
+      opt.dataset.label = "第" + i + "类";
+      opt.setAttribute("role", "option");
+      opt.textContent = "第" + i + "类";
+      catOptions.appendChild(opt);
+    }
+    window.addEventListener("resize", () => {
+      document.querySelectorAll(".msel.open").forEach(syncMselPanelWidth);
+    });
+    document.querySelectorAll(".msel").forEach(initMsel);
+    document.addEventListener("click", () => {
+      document.querySelectorAll(".msel.open").forEach((el) => el.classList.remove("open"));
+    });
+
+    function setAttach(name, previewUrl) {
+      attachFileName = name || "";
+      if (attachPreviewUrl) URL.revokeObjectURL(attachPreviewUrl);
+      attachPreviewUrl = previewUrl || "";
+      const box = document.getElementById("pasteZone");
+      const img = document.getElementById("fAttachPreview");
+      const nameEl = document.getElementById("fFileName");
+      nameEl.textContent = attachFileName;
+      nameEl.classList.toggle("show", !!attachFileName);
+      if (attachPreviewUrl) {
+        img.src = attachPreviewUrl;
+        box.classList.add("has-file");
+      } else {
+        img.removeAttribute("src");
+        box.classList.remove("has-file");
+        document.getElementById("fFile").value = "";
+      }
+    }
+
+    const pasteZone = document.getElementById("pasteZone");
+    const fileInput = document.getElementById("fFile");
+
+    pasteZone.addEventListener("click", (e) => {
+      if (e.target.closest(".img-upload-clear")) return;
+      pasteZone.focus();
+      fileInput.click();
+    });
+
+    document.getElementById("attachClear").addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setAttach("", "");
+    });
+
+    fileInput.addEventListener("change", (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      if (!f.type.startsWith("image/")) return toast("仅支持图片类型");
+      setAttach(f.name, URL.createObjectURL(f));
+    });
+
+    function handleAttachPaste(e, fromZone) {
+      const mask = document.getElementById("formMask");
+      if (!mask || !mask.classList.contains("show")) return;
+      const items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type && item.type.startsWith("image/")) {
+          e.preventDefault();
+          const blob = item.getAsFile();
+          if (!blob) return;
+          const name =
+            "截图_" +
+            new Date().toISOString().slice(0, 19).replace(/[-:T]/g, "") +
+            ".png";
+          setAttach(name, URL.createObjectURL(blob));
+          toast("已粘贴截图");
+          return;
+        }
+      }
+      if (fromZone) toast("剪贴板中未检测到图片，请先截图再粘贴");
+    }
+
+    pasteZone.addEventListener("paste", (e) => {
+      handleAttachPaste(e, true);
+    });
+    // 申请弹窗打开且焦点不在其它输入框时，Ctrl+V 可粘贴到附件
+    document.addEventListener("paste", (e) => {
+      const t = e.target;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) {
+        return;
+      }
+      handleAttachPaste(e, false);
+    });
+
+    function syncDateRangeText() {
+      const start = document.getElementById("qDateFrom").value;
+      const end = document.getElementById("qDateTo").value;
+      const text = document.getElementById("dateRangeText");
+      const box = document.getElementById("dateRangeBox");
+      if (start || end) {
+        text.textContent = (start || "开始日期") + " - " + (end || "结束日期");
+        box.classList.add("has-value");
+      } else {
+        text.textContent = "开始日期 - 结束日期";
+        box.classList.remove("has-value");
+      }
+    }
+
+    function toast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 1800);
+    }
+
+    function progressTag(r) {
+      if (r.progress === "已驳回") {
+        return '<span class="tag warn">已驳回</span>';
+      }
+      if (r.progress === "已审核") {
+        return '<span class="tag ok">已审核</span>';
+      }
+      if (r.progress === "待品牌营销部审核") {
+        return '<span class="tag info">待品牌营销部审核</span>';
+      }
+      return '<span class="tag gray">待部门审核</span>';
+    }
+
+    function ymdCompact() {
+      return TODAY.replace(/-/g, "");
+    }
+
+    function nextBrandCode(country) {
+      if (!country) return "";
+      const prefix = country + ymdCompact();
+      let max = 0;
+      rows.forEach((r) => {
+        const code = r.brandCode || "";
+        if (code.startsWith(prefix) && code.length >= prefix.length + 2) {
+          const n = parseInt(code.slice(prefix.length, prefix.length + 2), 10);
+          if (!isNaN(n)) max = Math.max(max, n);
+        }
+      });
+      return prefix + String(max + 1).padStart(2, "0");
+    }
+
+    function emptyAuditFields() {
+      return {
+        deptAuditResult: "",
+        deptAuditor: "",
+        deptAuditTime: "",
+        brandAuditResult: "",
+        brandAuditor: "",
+        brandAuditTime: "",
+        rejectRemark: "",
+      };
+    }
+
+    function nowStr() {
+      const d = new Date();
+      const p = (n) => String(n).padStart(2, "0");
+      return (
+        d.getFullYear() +
+        "-" +
+        p(d.getMonth() + 1) +
+        "-" +
+        p(d.getDate()) +
+        " " +
+        p(d.getHours()) +
+        ":" +
+        p(d.getMinutes()) +
+        ":" +
+        p(d.getSeconds())
+      );
+    }
+
+    function rowDeptL2(r) {
+      return r.deptL2 || (r.dept || "").split(" / ").pop() || "";
+    }
+
+    function getFiltered() {
+      return rows.filter((r) => {
+        if (filter.applicant && r.applicant !== filter.applicant) return false;
+        if (filter.dept && rowDeptL2(r) !== filter.dept) return false;
+        if (filter.progress && r.progress !== filter.progress) return false;
+        const dateVal = ((r[filter.dateField] || r.createTime || "") + "").slice(0, 10);
+        if (filter.dateFrom && dateVal < filter.dateFrom) return false;
+        if (filter.dateTo && dateVal > filter.dateTo) return false;
+        if (filter.text) {
+          const field = filter.textField || "name";
+          const raw = r[field] == null ? "" : String(r[field]);
+          if (!raw.includes(filter.text)) return false;
+        }
+        return true;
+      });
+    }
+
+    function kv(label, value) {
+      return (
+        '<div class="row"><span class="k">' +
+        label +
+        "：</span><span class=\"v\">" +
+        (value || "") +
+        "</span></div>"
+      );
+    }
+
+    function renderTable() {
+      const list = getFiltered();
+      const tbody = document.getElementById("tbody");
+      const empty = document.getElementById("empty");
+      const pages = Math.max(1, Math.ceil(list.length / 10) || 1);
+      document.getElementById("pageInfo").textContent =
+        "共 " + list.length + " 条 · 每页 10 条 · 1 / " + pages;
+      document.getElementById("checkAll").checked = false;
+      updateToolbar();
+
+      if (!list.length) {
+        tbody.innerHTML = "";
+        empty.style.display = "block";
+        return;
+      }
+      empty.style.display = "none";
+      tbody.innerHTML = list
+        .map(
+          (r) => `
+        <tr data-id="${r.id}" onclick="onRowClick(event, ${r.id})">
+          <td><input type="checkbox" class="row-check" value="${r.id}" onclick="event.stopPropagation(); updateToolbar()" /></td>
+          <td>
+            <div class="kv">
+              ${kv("申请人", r.applicant)}
+              ${kv("所属部门", r.deptL2 || (r.dept || "").split(" / ").pop() || "")}
+            </div>
+          </td>
+          <td>
+            <div class="kv">
+              ${kv("商标类型", (r.types || []).join(" / "))}
+              ${kv("商标名称", r.name)}
+              ${kv("品牌编码", r.brandCode)}
+              ${kv("国别/地区", r.country)}
+            </div>
+          </td>
+          <td>
+            <div class="kv">
+              ${kv("使用人1", personName(r.user))}
+              ${kv("备案平台1", r.platform)}
+              ${kv("备案账号1", r.account)}
+              ${kv("授权账号1", r.authAccount)}
+            </div>
+          </td>
+          <td>
+            <div class="kv">
+              ${kv("商标类别", "第" + r.category + "类")}
+            </div>
+          </td>
+          <td>
+            <div class="kv">
+              ${
+                r.fileName
+                  ? '<a class="link-file" href="javascript:;" onclick="event.stopPropagation()">' +
+                    r.fileName +
+                    "</a>"
+                  : ""
+              }
+            </div>
+          </td>
+          <td>
+            <div class="kv">
+              <div class="row"><span class="k">申请状态：</span><span class="v">${progressTag(r)}</span></div>
+            </div>
+          </td>
+          <td>
+            <div class="kv">
+              ${kv("部门审核人", r.deptAuditor)}
+              ${kv("部门审核时间", r.deptAuditTime)}
+              ${kv("品牌营销部审核人", r.brandAuditor)}
+              ${kv("品牌营销部审核时间", r.brandAuditTime)}
+              ${kv("驳回备注", r.rejectRemark)}
+            </div>
+          </td>
+          <td>
+            <div class="kv">
+              ${kv("创建人", r.creator)}
+              ${kv("创建时间", r.createTime)}
+              ${kv("更新人", r.updater)}
+              ${kv("更新时间", r.updateTime)}
+            </div>
+          </td>
+          <td class="ops">
+            <button type="button" class="link-btn" onclick="event.stopPropagation(); openForm('edit', ${r.id})">编辑</button>
+          </td>
+        </tr>`
+        )
+        .join("");
+    }
+
+    function selectedIds() {
+      return Array.from(document.querySelectorAll(".row-check:checked")).map((el) =>
+        Number(el.value)
+      );
+    }
+
+    function updateToolbar() {
+      const ids = selectedIds();
+      document.querySelectorAll("table.list tbody tr").forEach((tr) => {
+        const id = Number(tr.dataset.id);
+        tr.classList.toggle("selected", ids.includes(id));
+      });
+    }
+
+    function toggleAll(el) {
+      document.querySelectorAll(".row-check").forEach((c) => {
+        c.checked = el.checked;
+      });
+      updateToolbar();
+    }
+
+    function onRowClick(e, id) {
+      if (e.target.closest("a,input,button")) return;
+      const box = document.querySelector(`.row-check[value="${id}"]`);
+      if (box) {
+        box.checked = !box.checked;
+        updateToolbar();
+      }
+    }
+
+    function doSearch() {
+      filter = {
+        applicant: document.getElementById("qApplicant").value,
+        dept: document.getElementById("qDept").value,
+        progress: document.getElementById("qProgress").value,
+        dateField: document.getElementById("qDateField").value || "createTime",
+        dateFrom: document.getElementById("qDateFrom").value,
+        dateTo: document.getElementById("qDateTo").value,
+        textField: document.getElementById("qTextField").value || "name",
+        text: document.getElementById("qText").value.trim(),
+      };
+      renderTable();
+    }
+
+    function resetSearch() {
+      document.getElementById("qApplicant").value = "";
+      document.getElementById("qDept").value = "";
+      document.getElementById("qProgress").value = "";
+      document.getElementById("qDateField").value = "createTime";
+      document.getElementById("qTextField").value = "name";
+      document.getElementById("qDateFrom").value = "";
+      document.getElementById("qDateTo").value = "";
+      document.getElementById("qText").value = "";
+      syncDateRangeText();
+      filter = {};
+      renderTable();
+    }
+
+    function openForm(m, id) {
+      mode = m;
+      editingId = id || null;
+      document.getElementById("formTitle").textContent =
+        m === "add" ? "申请注册" : "编辑";
+      document.getElementById("formTip").textContent =
+        m === "add"
+          ? "申请注册：申请人默认当前登录人可改；所属部门为申请人二级部门（只读）；商标类别多选将拆成多条。"
+          : "编辑：可修改申请人等字段；所属部门随申请人自动带出；商标类别可改选。";
+
+      fillApplicantOptions(CURRENT_USER);
+      document.getElementById("fTypes").value = "";
+      setMselValues("fCategories", []);
+      document.querySelectorAll(".msel.open").forEach((el) => el.classList.remove("open"));
+      document.getElementById("fName").value = "";
+      document.getElementById("fCountry").value = "";
+      fillUserOptions(personName(ORG.deptHead));
+      document.getElementById("fPlatform").value = "";
+      document.getElementById("fAccount").value = "";
+      document.getElementById("fAuthAccount").value = "";
+      document.getElementById("fFile").value = "";
+      setAttach("", "");
+
+      if (m === "edit") {
+        const r = rows.find((x) => x.id === id);
+        if (!r) return;
+        fillApplicantOptions(r.applicant || CURRENT_USER);
+        if (r.deptL2) document.getElementById("fDept").value = r.deptL2;
+        document.getElementById("fTypes").value = (r.types && r.types[0]) || "";
+        setMselValues("fCategories", r.category != null ? [r.category] : []);
+        document.getElementById("fName").value = r.name;
+        document.getElementById("fCountry").value = r.country;
+        fillUserOptions(r.user || "");
+        document.getElementById("fPlatform").value = r.platform;
+        document.getElementById("fAccount").value = r.account;
+        document.getElementById("fAuthAccount").value = r.authAccount || "";
+        setAttach(r.fileName || "", "");
+      }
+
+      document.getElementById("formMask").classList.add("show");
+    }
+
+    function closeForm() {
+      document.querySelectorAll(".msel.open").forEach((el) => el.classList.remove("open"));
+      document.getElementById("formMask").classList.remove("show");
+    }
+
+    function saveForm() {
+      const applicant = document.getElementById("fApplicant").value;
+      const typeVal = document.getElementById("fTypes").value;
+      const types = typeVal ? [typeVal] : [];
+      const categories = getMselValues("fCategories");
+      const name = document.getElementById("fName").value.trim();
+      const country = document.getElementById("fCountry").value;
+      const user = document.getElementById("fUser").value;
+      const platform = document.getElementById("fPlatform").value;
+      const account = document.getElementById("fAccount").value.trim();
+      const authAccount = document.getElementById("fAuthAccount").value.trim();
+
+      if (!applicant) return toast("请选择申请人");
+      if (!typeVal) return toast("请选择商标类型");
+      if (!name) return toast("请填写商标名称");
+      if (!country) return toast("请选择国别/地区");
+      if (!categories.length) return toast("请选择商标类别");
+      if (!user) return toast("请选择使用人1");
+      if (!platform) return toast("请选择备案平台1");
+      if (!account) return toast("请填写备案账号1");
+      if (!authAccount) return toast("请填写授权账号1");
+      if (!attachFileName) return toast("请上传或粘贴董事长审批附件截图");
+
+      const appOrg = getApplicantOrg(applicant);
+      const route = resolveApprover(
+        appOrg.deptL1,
+        appOrg.hasL2Head,
+        appOrg.deptHead,
+        "品牌业务中心负责人"
+      );
+      const ts = nowStr();
+
+      if (mode === "add") {
+        let nextId = rows.length ? Math.max(...rows.map((r) => r.id)) + 1 : 1;
+        categories.forEach((category) => {
+          rows.unshift({
+            id: nextId++,
+            dept: appOrg.deptDisplay,
+            deptL1: appOrg.deptL1,
+            deptL2: appOrg.deptL2,
+            applicant,
+            applyDate: TODAY,
+            types: types.slice(),
+            name,
+            brandCode: nextBrandCode(country),
+            country,
+            category,
+            user,
+            platform,
+            account,
+            authAccount,
+            scene: "",
+            fileName: attachFileName,
+            progress: "待部门审核",
+            ...emptyAuditFields(),
+            creator: CURRENT_USER,
+            createTime: ts,
+            updater: CURRENT_USER,
+            updateTime: ts,
+            routeRole: route.role,
+          });
+        });
+        toast(
+          categories.length > 1
+            ? "已提交 " + categories.length + " 条申请（按商标类别拆分）"
+            : "已提交，进入待部门审核"
+        );
+      } else {
+        const r = rows.find((x) => x.id === editingId);
+        if (!r) return;
+        const [firstCat, ...restCats] = categories;
+        Object.assign(r, {
+          dept: appOrg.deptDisplay,
+          deptL1: appOrg.deptL1,
+          deptL2: appOrg.deptL2,
+          applicant,
+          types,
+          name,
+          country,
+          category: firstCat,
+          user,
+          platform,
+          account,
+          authAccount,
+          fileName: attachFileName,
+          updater: CURRENT_USER,
+          updateTime: ts,
+          routeRole: route.role,
+        });
+        if (restCats.length) {
+          let nextId = Math.max(...rows.map((x) => x.id)) + 1;
+          restCats.forEach((category) => {
+            rows.unshift({
+              ...JSON.parse(JSON.stringify(r)),
+              id: nextId++,
+              category,
+              brandCode: nextBrandCode(country),
+              progress: "待部门审核",
+              ...emptyAuditFields(),
+              createTime: ts,
+              updateTime: ts,
+              creator: CURRENT_USER,
+              updater: CURRENT_USER,
+            });
+          });
+          toast("已保存，并按新增类别拆出 " + restCats.length + " 条");
+        } else {
+          toast("已保存修改");
+        }
+      }
+      closeForm();
+      renderTable();
+    }
+
+    function editSelected() {
+      const ids = selectedIds();
+      if (ids.length !== 1) return toast("请勾选一条记录进行编辑");
+      openForm("edit", ids[0]);
+    }
+
+    function deleteSelected() {
+      const ids = selectedIds();
+      if (!ids.length) return toast("请先勾选要删除的记录");
+      askDelete(ids);
+    }
+
+    function openAudit(type) {
+      const ids = selectedIds();
+      if (ids.length !== 1) return toast("请勾选一条记录");
+      const r = rows.find((x) => x.id === ids[0]);
+      if (!r) return;
+
+      if (type === "dept") {
+        if (r.progress !== "待部门审核") {
+          return toast("仅「待部门审核」状态可操作");
+        }
+        document.getElementById("auditTitle").textContent = "部门审核";
+        document.getElementById("auditTip").textContent =
+          "商标「" + r.name + "」· " + (r.brandCode || "") + " · 部门审核人记为当前登录人";
+      } else {
+        if (r.progress !== "待品牌营销部审核") {
+          return toast("仅「待品牌营销部审核」状态可操作");
+        }
+        document.getElementById("auditTitle").textContent = "品牌营销部审核";
+        document.getElementById("auditTip").textContent =
+          "商标「" + r.name + "」· " + (r.brandCode || "") + " · 品牌营销部审核人记为当前登录人";
+      }
+
+      auditType = type;
+      auditingId = r.id;
+      document.querySelector('input[name="auditResult"][value="通过"]').checked = true;
+      document.getElementById("fRejectRemark").value = "";
+      toggleReject();
+      document.getElementById("auditMask").classList.add("show");
+    }
+
+    function closeAudit() {
+      document.getElementById("auditMask").classList.remove("show");
+      auditingId = null;
+    }
+
+    function toggleReject() {
+      const result = document.querySelector('input[name="auditResult"]:checked').value;
+      document.getElementById("rejectBlock").classList.toggle("show", result === "驳回");
+    }
+
+    function saveAudit() {
+      const r = rows.find((x) => x.id === auditingId);
+      if (!r) return;
+      const result = document.querySelector('input[name="auditResult"]:checked').value;
+      const remark = document.getElementById("fRejectRemark").value.trim();
+      if (result === "驳回" && !remark) return toast("驳回时必须填写驳回备注");
+      const ts = nowStr();
+
+      if (auditType === "dept") {
+        r.deptAuditResult = result;
+        r.deptAuditor = CURRENT_USER;
+        r.deptAuditTime = ts;
+        if (result === "驳回") {
+          r.progress = "已驳回";
+          r.rejectRemark = remark;
+        } else {
+          r.progress = "待品牌营销部审核";
+          r.rejectRemark = "";
+        }
+      } else {
+        r.brandAuditResult = result;
+        r.brandAuditor = CURRENT_USER;
+        r.brandAuditTime = ts;
+        if (result === "驳回") {
+          r.progress = "已驳回";
+          r.rejectRemark = remark;
+        } else {
+          r.progress = "已审核";
+          r.rejectRemark = "";
+        }
+      }
+
+      r.updater = CURRENT_USER;
+      r.updateTime = ts;
+      closeAudit();
+      renderTable();
+      toast(
+        result === "通过"
+          ? auditType === "dept"
+            ? "部门审核通过，状态：待品牌营销部审核"
+            : "品牌营销部审核通过"
+          : "已驳回"
+      );
+    }
+
+    function askDelete(ids) {
+      pendingDeleteIds = ids;
+      document.getElementById("delText").textContent =
+        "确定删除选中的 " + ids.length + " 条申请记录？删除后不可恢复。";
+      document.getElementById("delMask").classList.add("show");
+    }
+
+    function closeDel() {
+      document.getElementById("delMask").classList.remove("show");
+      pendingDeleteIds = [];
+    }
+
+    function confirmDelete() {
+      rows = rows.filter((r) => !pendingDeleteIds.includes(r.id));
+      closeDel();
+      renderTable();
+      toast("已删除");
+    }
+
+    function openImport() {
+      document.getElementById("importFile").value = "";
+      document.getElementById("importMask").classList.add("show");
+    }
+    function closeImport() {
+      document.getElementById("importMask").classList.remove("show");
+    }
+    function doImport() {
+      const f = document.getElementById("importFile").files[0];
+      if (!f) return toast("请选择导入文件");
+      const route = resolveApprover(
+        ORG.deptL1,
+        ORG.hasL2Head,
+        ORG.deptHead,
+        "品牌业务中心负责人"
+      );
+      const id = rows.length ? Math.max(...rows.map((r) => r.id)) + 1 : 1;
+      const ts = nowStr();
+      rows.unshift({
+        id,
+        dept: ORG.deptDisplay,
+        deptL1: ORG.deptL1,
+        applicant: CURRENT_USER,
+        applyDate: TODAY,
+        types: ["文字"],
+        name: "导入样例-" + f.name.replace(/\.\w+$/, "").slice(0, 12),
+        brandCode: nextBrandCode("US") || "US" + ymdCompact() + "01",
+        country: "US",
+        category: "25",
+        user: personName(ORG.deptHead),
+        platform: "亚马逊",
+        account: "import_demo_01",
+        authAccount: "import_auth_01",
+        scene: "Excel 导入生成的演示数据",
+        fileName: "",
+        progress: "待部门审核",
+        ...emptyAuditFields(),
+        creator: CURRENT_USER,
+        createTime: ts,
+        updater: CURRENT_USER,
+        updateTime: ts,
+        routeRole: route.role,
+      });
+      closeImport();
+      renderTable();
+      toast("导入成功 1 条（原型模拟）");
+    }
+
+    function exportCsv() {
+      const list = getFiltered();
+      const header = [
+        "商标类型",
+        "商标名称",
+        "品牌编码",
+        "使用人1",
+        "备案平台1",
+        "备案账号1",
+        "授权账号1",
+        "商标类别",
+        "国别/地区",
+        "申请状态",
+        "部门审核人",
+        "部门审核时间",
+        "品牌营销部审核人",
+        "品牌营销部审核时间",
+        "驳回备注",
+        "创建人",
+        "创建时间",
+        "更新人",
+        "更新时间",
+      ];
+      const lines = [header.join(",")].concat(
+        list.map((r) =>
+          [
+            r.types.join("/"),
+            r.name,
+            r.brandCode || "",
+            personName(r.user) || "",
+            r.platform || "",
+            r.account || "",
+            r.authAccount || "",
+            r.category,
+            r.country || "",
+            r.progress,
+            r.deptAuditor || "",
+            r.deptAuditTime || "",
+            r.brandAuditor || "",
+            r.brandAuditTime || "",
+            (r.rejectRemark || "").replace(/,/g, "，"),
+            r.creator || "",
+            r.createTime || "",
+            r.updater || "",
+            r.updateTime || "",
+          ].join(",")
+        )
+      );
+      const blob = new Blob(["\ufeff" + lines.join("\n")], {
+        type: "text/csv;charset=utf-8",
+      });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "品牌注册台账.csv";
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast("已导出 CSV");
+    }
+
+    // close mask by backdrop
+    ["formMask", "importMask", "delMask", "auditMask"].forEach((id) => {
+      document.getElementById(id).addEventListener("click", (e) => {
+        if (e.target.id === id) {
+          document.getElementById(id).classList.remove("show");
+        }
+      });
+    });
+
+    document.getElementById("qDateFrom").addEventListener("change", syncDateRangeText);
+    document.getElementById("qDateTo").addEventListener("change", syncDateRangeText);
+    syncDateRangeText();
+    renderTable();
+
+    if (new URLSearchParams(location.search).has("embed")) {
+      const titleBar = document.querySelector(".title-bar");
+      if (titleBar) titleBar.style.display = "none";
+      document.body.style.background = "transparent";
+      window.parent && window.parent.postMessage({ type: "brandRegisterReady" }, "*");
+    }
+  </script>
+</body>
+</html>

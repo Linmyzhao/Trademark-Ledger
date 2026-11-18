@@ -2,30 +2,367 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>商标台账管理 - 列表原型</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>品牌 / 域名 / 邮箱管理</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #f0f2f5;
+      --panel: #ffffff;
       --card: #fff;
       --border: #e5e7eb;
-      --header: #e8eef5;
+      --border-strong: #d9d9d9;
       --text: #1f2937;
+      --text-secondary: #4e5969;
+      --text-muted: #6b7280;
       --muted: #6b7280;
       --primary: #1677ff;
+      --primary-hover: #4096ff;
+      --primary-soft: #e6f4ff;
       --danger: #ff4d4f;
-      --ok: #52c41a;
+      --danger-soft: #fff1f0;
+      --success: #52c41a;
+      --success-soft: #f6ffed;
+      --warn: #d46b08;
+      --warn-soft: #fff7e6;
+      --header-bg: #e8eef5;
+      --row-hover: #f5f8fc;
+      --stale-bg: #fffbe6;
+      --font: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+      --radius: 4px;
     }
-    * { box-sizing: border-box; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
     body {
-      margin: 0;
-      font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+      font-family: var(--font);
       background: var(--bg);
       color: var(--text);
       font-size: 13px;
+      line-height: 1.5;
+      overflow: hidden;
     }
-    .page { padding: 10px 12px 16px; }
-    .title { font-size: 17px; font-weight: 600; margin: 0 0 8px; }
+
+    button, input, select, textarea { font-family: inherit; font-size: 13px; }
+    button { cursor: pointer; border: none; background: none; color: inherit; }
+    ::placeholder { color: #bfbfbf; }
+
+    .page {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 12px 16px;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    /* Header / menu — align with domain ledger */
+    .page-header { display: none; }
+    .menu-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      border-radius: 6px 6px 0 0;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .menu-tab {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      height: 40px;
+      padding: 0 20px;
+      font-size: 14px;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      border-radius: 0;
+    }
+    .menu-tab:hover { color: var(--primary); background: transparent; }
+    .menu-tab.active {
+      color: var(--primary);
+      font-weight: 600;
+      border-bottom-color: var(--primary);
+      background: transparent;
+    }
+    .page-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 8px;
+      flex-shrink: 0;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .role-switch {
+      display: inline-flex;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #fff;
+    }
+    .role-btn {
+      padding: 5px 14px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: #fff;
+      transition: all 0.15s;
+    }
+    .role-btn + .role-btn { border-left: 1px solid var(--border-strong); }
+    .role-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+    .role-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .link-btn {
+      color: var(--primary);
+      font-size: 12px;
+      padding: 4px 8px;
+    }
+    .link-btn:hover { text-decoration: underline; }
+
+    /* Filter panel — domain ledger style */
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .filters {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+    }
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      padding: 0;
+    }
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .filter-item label {
+      color: var(--text-secondary);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .filter-item input,
+    .filter-item select {
+      height: 30px;
+      padding: 0 10px;
+      border: 1px solid #d9d9d9;
+      border-radius: 15px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+      min-width: 110px;
+      max-width: 140px;
+    }
+    .filter-item input:focus,
+    .filter-item select:focus {
+      border-color: var(--primary);
+    }
+    .filter-item input.wide { min-width: 180px; }
+    .filter-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 0;
+    }
+
+    .search-combo {
+      display: inline-flex;
+      align-items: stretch;
+      height: 30px;
+      border: 1px solid #d9d9d9;
+      border-radius: 15px;
+      background: #fff;
+      overflow: hidden;
+      min-width: 0;
+    }
+    .search-combo:focus-within { border-color: var(--primary); }
+    .search-combo select {
+      height: 100% !important;
+      min-width: 96px !important;
+      max-width: 110px !important;
+      border: none !important;
+      border-radius: 0 !important;
+      border-right: 1px solid #d9d9d9 !important;
+      background: #fafafa;
+      padding: 0 8px !important;
+      color: var(--muted);
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+    }
+    .search-combo input {
+      flex: 1;
+      height: 100% !important;
+      width: 160px;
+      border: none !important;
+      border-radius: 0 !important;
+      min-width: 140px;
+      padding: 0 10px !important;
+      outline: none;
+      background: #fff;
+      color: var(--text);
+    }
+    .date-filter {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .date-type-select {
+      height: 30px;
+      min-width: 110px;
+      max-width: 140px;
+      padding: 0 28px 0 10px;
+      border: 1px solid #d9d9d9;
+      border-radius: 15px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M3 4.5L6 8l3-3.5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+    .date-type-select:focus { border-color: var(--primary); }
+    .date-range {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      height: 30px;
+      width: 200px;
+      padding: 0 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 15px;
+      background: #fff;
+      gap: 6px;
+      min-width: 200px;
+      flex-shrink: 0;
+      overflow: hidden;
+      color: #bfbfbf;
+      cursor: pointer;
+    }
+    .date-range:focus-within,
+    .date-range.is-active { border-color: var(--primary); color: var(--text); }
+    .date-range .ph {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      color: #bfbfbf;
+      font-size: 13px;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .date-range.is-active .ph { display: none; }
+    .date-range-inputs {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+    .date-range.is-active .date-range-inputs { display: inline-flex; }
+    .date-range input[type="date"] {
+      height: 28px;
+      border: none;
+      outline: none;
+      min-width: 0;
+      width: 50%;
+      padding: 0 2px;
+      background: transparent;
+      color: var(--text);
+      font-size: 13px;
+      flex: 1;
+    }
+    .date-range .sep {
+      color: var(--muted);
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 400;
+      border: 1px solid #d9d9d9;
+      background: #fff;
+      color: var(--text);
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #4096ff; color: #fff; border-color: #4096ff; }
+    .btn-default {
+      background: #fff;
+      border-color: #d9d9d9;
+      color: var(--text);
+    }
+    .btn-default:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .btn-default:disabled {
+      color: var(--muted);
+      border-color: var(--border);
+      cursor: not-allowed;
+      background: #fafafa;
+    }
+    .btn-danger-text,
+    .btn-danger {
+      background: #fff;
+      border-color: #ffa39e;
+      color: var(--danger);
+    }
+    .btn-danger-text:hover,
+    .btn-danger:hover {
+      border-color: var(--danger);
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+    .btn-pill { border-radius: 15px !important; height: 30px !important; }
+    .btn-text,
+    .btn-link {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      height: 30px;
+      padding: 0 8px;
+    }
+    .btn-text:hover,
+    .btn-link:hover { color: var(--primary); }
+
     .toolbar {
       display: flex;
       flex-wrap: wrap;
@@ -36,1280 +373,2336 @@
       padding: 8px 10px;
       border-radius: 6px;
       border: 1px solid var(--border);
-    }
-    .toolbar .spacer { flex: 1; }
-    .btn {
-      border: 1px solid #d9d9d9;
-      background: #fff;
-      color: var(--text);
-      height: 28px;
-      padding: 0 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-    .btn:hover { border-color: var(--primary); color: var(--primary); }
-    .btn-primary {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #fff;
-    }
-    .btn-primary:hover { background: #4096ff; color: #fff; }
-    .btn-danger {
-      border-color: #ffa39e;
-      color: var(--danger);
-    }
-    .btn-ghost-teal {
-      border-color: #13c2c2;
-      color: #08979c;
-    }
-    .filters {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px 10px;
-      margin-bottom: 8px;
-    }
-    .filters-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      align-items: center;
-      position: relative;
-      z-index: 2;
-    }
-    .filters select,
-    .filters input[type="text"],
-    .filters input[type="date"] {
-      height: 30px;
-      border: 1px solid #d9d9d9;
-      border-radius: 15px;
-      padding: 0 10px;
-      outline: none;
-      background: #fff;
-      font-size: 13px;
-      color: var(--text);
-    }
-    .filters select:focus,
-    .filters input:focus { border-color: var(--primary); }
-    .filters select { min-width: 100px; max-width: 120px; }
-    .date-range {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      height: 30px;
-      width: 200px;
-      border: 1px solid #d9d9d9;
-      border-radius: 15px;
-      padding: 0 12px;
-      background: #fff;
-      color: #bfbfbf;
-      cursor: pointer;
-      user-select: none;
-      overflow: hidden;
       flex-shrink: 0;
-      z-index: 1;
     }
-    .date-range.has-value { color: var(--text); }
-    .date-range input[type="date"] {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      opacity: 0;
-      width: 50%;
-      height: 100%;
-      cursor: pointer;
-      border: none !important;
-      padding: 0 !important;
-      margin: 0;
-    }
-    .date-range #fStart { left: 0; }
-    .date-range #fEnd { left: 50%; }
-    .date-range .range-text {
-      pointer-events: none;
-      white-space: nowrap;
-      font-size: 13px;
-    }
-    .filters-row select { position: relative; z-index: 3; }
-    .combo-search {
-      display: inline-flex;
-      align-items: stretch;
-      height: 30px;
-      border: 1px solid #d9d9d9;
-      border-radius: 15px;
+
+    /* Table area — domain ledger */
+    .table-panel {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
-      background: #fff;
-    }
-    .combo-search:focus-within { border-color: var(--primary); }
-    .combo-search select {
-      height: 100% !important;
-      min-width: 96px !important;
-      max-width: 110px !important;
-      border: none !important;
-      border-radius: 0 !important;
-      border-right: 1px solid #d9d9d9 !important;
-      padding: 0 8px !important;
-      background: #fafafa;
-      color: var(--muted);
-    }
-    .combo-search input {
-      height: 100% !important;
-      width: 160px;
-      border: none !important;
-      border-radius: 0 !important;
-      padding: 0 10px !important;
-      min-width: 0;
-    }
-    .btn-pill { border-radius: 15px !important; height: 30px !important; }
-    .btn-link {
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      height: 30px;
-      padding: 0 8px;
-      font-size: 13px;
-    }
-    .btn-link:hover { color: var(--primary); }
-    .radio-box {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      height: 30px;
-      border: 1px solid #d9d9d9;
-      border-radius: 15px;
-      padding: 0 12px;
-      background: #fff;
-      white-space: nowrap;
-    }
-    .radio-box .rb-title {
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .radio-box label {
-      cursor: pointer;
-      font-size: 13px;
-    }
-    .radio-box input { margin-right: 2px; vertical-align: -1px; }
-    .card {
+      padding: 0;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 6px;
-      overflow: auto;
-      max-height: calc(100vh - 120px);
     }
-    table {
+    .table-scroll {
+      flex: 1;
+      overflow: auto;
+    }
+
+    table.ledger {
       width: 100%;
       border-collapse: collapse;
-      border-spacing: 0;
       table-layout: fixed;
+      min-width: 1280px;
     }
-    th {
-      background: var(--header);
-      font-weight: 600;
-      text-align: left;
-      padding: 4px 6px;
-      border-bottom: 1px solid #d9d9d9;
-      border-right: 1px solid #d9d9d9;
-      white-space: nowrap;
+    table.ledger thead th {
       position: sticky;
       top: 0;
-      z-index: 1;
-      font-size: 13px;
-    }
-    th:last-child, td:last-child { border-right: none; }
-    td {
-      padding: 4px 6px;
+      z-index: 2;
+      background: var(--header-bg);
       border-bottom: 1px solid #d9d9d9;
       border-right: 1px solid #d9d9d9;
+      padding: 6px 8px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    table.ledger thead th:last-child { border-right: none; }
+    table.ledger tbody td {
+      border-bottom: 1px solid #d9d9d9;
+      border-right: 1px solid #d9d9d9;
+      padding: 6px 8px;
       vertical-align: top;
       background: #fff;
     }
-    tr:hover td { background: #f5f8fc; }
-    th.check,
-    td.check {
-      width: 20px !important;
-      min-width: 20px !important;
-      max-width: 20px !important;
-      text-align: center;
+    table.ledger tbody td:last-child { border-right: none; }
+    table.ledger tbody tr:hover td { background: var(--row-hover); }
+    table.ledger tbody tr.selected td { background: #e6f4ff; }
+    table.ledger tbody tr.stale td { background: var(--stale-bg); }
+    table.ledger tbody tr.stale:hover td { background: #fff7cc; }
+    table.ledger tbody tr.stale.selected td { background: #ffe9a8; }
+
+    col.c-check { width: 36px; }
+    col.c-ops { width: 72px; }
+    th.check, td.check,
+    .col-check {
+      width: 36px;
+      text-align: center !important;
       vertical-align: middle !important;
       padding: 0 !important;
-      box-sizing: border-box;
-      overflow: hidden;
     }
-    .check input[type="checkbox"] {
-      margin: 0;
-      cursor: pointer;
+    .col-check input, .check input {
       width: 13px;
       height: 13px;
-      vertical-align: middle;
+      margin: 0;
+      cursor: pointer;
+      accent-color: var(--primary);
     }
-    .kv { line-height: 1.45; overflow: hidden; }
-    .kv > div {
+    td.ops, .col-action {
+      width: 72px;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      vertical-align: middle !important;
     }
-    .kv .label { color: var(--muted); }
-    .kv .val { color: var(--text); }
-    .tag {
-      display: inline-block;
-      padding: 0 5px;
-      height: 20px;
-      line-height: 20px;
-      border-radius: 3px;
-      font-size: 12px;
-    }
-    .tag-green { background: #f6ffed; color: var(--ok); border: 1px solid #b7eb8f; }
-    .tag-blue { background: #e6f4ff; color: var(--primary); border: 1px solid #91caff; }
-    .tag-orange { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
-    .link { color: var(--primary); text-decoration: none; }
-    .toast {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,.78);
-      color: #fff;
-      padding: 10px 18px;
-      border-radius: 6px;
-      display: none;
-      z-index: 99;
-    }
-    .modal-mask {
-      position: fixed; inset: 0; background: rgba(0,0,0,.45);
-      display: none; align-items: center; justify-content: center; z-index: 100;
-    }
-    .modal {
-      background: #fff; width: 480px; max-width: 92vw;
-      border-radius: 8px; padding: 20px 24px; box-shadow: 0 8px 24px rgba(0,0,0,.15);
-    }
-    .modal h3 { margin: 0 0 12px; font-size: 16px; }
-    .modal p { margin: 0 0 16px; color: var(--muted); line-height: 1.6; }
-    .modal .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
-    .modal-add {
-      width: 980px; max-width: 96vw; max-height: 90vh;
-      display: flex; flex-direction: column; padding: 0; overflow: hidden;
-      border-radius: 4px;
-    }
-    .modal-add .modal-hd {
-      padding: 12px 20px;
-      border-bottom: 1px solid #f0f0f0;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .modal-add .modal-hd h3 {
-      margin: 0; font-size: 16px; font-weight: 600; color: var(--text);
-      border-left: 3px solid var(--primary); padding-left: 10px; line-height: 1.2;
-    }
-    .modal-add .modal-bd {
-      padding: 12px 24px 8px; overflow: auto; flex: 1; background: #fff;
-    }
-    .modal-add .modal-ft {
-      padding: 10px 20px; border-top: 1px solid #f0f0f0;
-      display: flex; justify-content: flex-end; gap: 8px; background: #fff;
-    }
-    .form-sec { margin-bottom: 16px; }
-    .form-sec:last-child { margin-bottom: 8px; }
-    .form-sec h4 {
-      margin: 0 0 12px;
+    .action-link, td.ops .link-btn {
+      border: none;
+      background: none;
+      color: var(--primary);
+      cursor: pointer;
+      padding: 0;
       font-size: 13px;
-      font-weight: 600;
+      font-family: inherit;
+    }
+    .action-link:hover, td.ops .link-btn:hover { color: #4096ff; text-decoration: none; }
+
+    .radio-group {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      min-height: 32px;
+    }
+    .radio-group label {
+      display: inline-flex !important;
+      align-items: center;
+      gap: 6px;
+      justify-content: flex-start !important;
+      min-height: auto !important;
+      font-size: 13px;
       color: var(--text);
-      border-left: 3px solid var(--primary);
-      padding-left: 8px;
-      line-height: 1.2;
+      cursor: pointer;
+      white-space: nowrap;
+      grid-column: auto !important;
     }
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      column-gap: 16px;
-      row-gap: 14px;
+    .radio-group input[type="radio"] {
+      width: 14px;
+      height: 14px;
+      margin: 0;
+      accent-color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
     }
-    .field {
+    /* 部门审核弹窗 — 同域名注册（紧凑） */
+    .review-modal .modal-header {
+      border-bottom: none;
+      padding: 14px 18px 0;
+    }
+    .review-modal .modal-header h3 { font-size: 15px; }
+    .review-modal .modal-body {
+      padding: 12px 18px 4px;
+    }
+    .review-modal .modal-footer {
+      border-top: none;
+      padding: 6px 18px 14px;
+    }
+    .review-form {
       display: grid;
-      grid-template-columns: 96px 1fr;
+      grid-template-columns: 1fr;
+      row-gap: 10px;
+    }
+    .review-row {
+      display: grid;
+      grid-template-columns: 72px 1fr;
       align-items: center;
       gap: 6px;
       min-width: 0;
     }
-    .field label {
+    .review-row.top { align-items: start; }
+    .review-row > .label {
       font-size: 13px;
       color: var(--text);
       text-align: right;
       line-height: 1.3;
-      justify-self: stretch;
+      white-space: nowrap;
     }
-    .field label .req { color: var(--danger); margin-right: 2px; }
-    .field input, .field select {
-      height: 32px; border: 1px solid #d9d9d9; border-radius: 6px;
-      padding: 0 11px; font-size: 13px; outline: none; background: #fff; width: 100%;
+    .review-row > .label .req {
+      color: var(--danger);
+      margin-right: 2px;
+    }
+    .review-row .radio-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 24px;
+      height: 28px;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+    }
+    .review-row .radio-group label {
+      display: inline-flex !important;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text);
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+      min-height: auto !important;
+      justify-content: flex-start !important;
+      grid-column: auto !important;
+    }
+    .review-row textarea {
+      width: 100%;
+      resize: vertical;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font: inherit;
+      outline: none;
+      color: var(--text);
+      background: #fff;
+      min-height: 52px;
+    }
+    .review-row textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.12);
+    }
+    .review-row .error-msg {
+      display: none;
+      grid-column: 2;
+      font-size: 12px;
+      color: var(--danger);
+      margin-top: 2px;
+    }
+    .review-row.error .error-msg { display: block; }
+
+    /* Dense cell lines — domain kv style */
+    .cell-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      line-height: 1.5;
+      overflow: hidden;
+    }
+    .cell-lines .line {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 12px;
+      line-height: 1.55;
       color: var(--text);
     }
-    .field input:focus, .field select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(22,119,255,.12); }
-    .field input:disabled, .field select:disabled {
-      background: #f5f5f5; color: var(--muted); cursor: not-allowed;
+    .line .k { color: var(--muted); }
+    .line .v { color: var(--text); }
+    .v-link, .line .v-link, .kv .v-link {
+      color: var(--primary);
+      cursor: pointer;
+      font-weight: 600;
     }
-    .field.hidden { display: none; }
-    .field.field-top { align-items: start; }
-    .field.field-top label { padding-top: 6px; }
-    .input-affix {
-      display: flex; align-items: center; gap: 6px; width: 100%; min-width: 0;
+    .v-link:hover, .line .v-link:hover, .kv .v-link:hover { text-decoration: underline; }
+    .line .v-warn { color: var(--warn); font-weight: 500; }
+    .line .v-danger { color: var(--danger); font-weight: 500; }
+
+    .tag {
+      display: inline-block;
+      padding: 0 6px;
+      height: 20px;
+      line-height: 20px;
+      border-radius: 3px;
+      font-size: 12px;
+      border: 1px solid;
+      white-space: nowrap;
+      vertical-align: middle;
     }
-    .input-affix input { flex: 1; min-width: 0; }
-    .input-affix .affix {
-      color: var(--muted); font-size: 13px; flex-shrink: 0; line-height: 32px;
+    .tag-green {
+      color: var(--success);
+      border-color: #b7eb8f;
+      background: var(--success-soft);
     }
-    .ms-wrap { position: relative; width: 100%; }
-    .ms-trigger {
-      min-height: 32px; border: 1px solid #d9d9d9; border-radius: 6px;
-      padding: 4px 28px 4px 8px; background: #fff; cursor: pointer;
-      display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
-      position: relative;
+    .tag-gray {
+      color: #595959;
+      border-color: #d9d9d9;
+      background: #fafafa;
     }
-    .ms-trigger:focus, .ms-wrap.open .ms-trigger {
-      border-color: var(--primary); box-shadow: 0 0 0 2px rgba(22,119,255,.12);
+    .tag-red {
+      color: #cf1322;
+      border-color: #ffa39e;
+      background: var(--danger-soft);
     }
-    .ms-trigger::after {
-      content: ""; position: absolute; right: 10px; top: 50%;
-      border: 5px solid transparent; border-top-color: #999; margin-top: -2px;
+    .tag-orange {
+      color: #d46b08;
+      border-color: #ffd591;
+      background: var(--warn-soft);
     }
-    .ms-placeholder { color: #bfbfbf; font-size: 13px; }
-    .ms-tag {
-      display: inline-flex; align-items: center; gap: 2px;
-      height: 22px; padding: 0 6px; border-radius: 4px;
-      background: #f0f5ff; color: var(--primary); font-size: 12px;
+    .tag-blue {
+      color: var(--primary);
+      border-color: #91caff;
+      background: var(--primary-soft);
     }
-    .ms-tag button {
-      border: none; background: transparent; color: var(--primary);
-      cursor: pointer; padding: 0; line-height: 1; font-size: 14px;
+
+    .empty {
+      padding: 48px;
+      text-align: center;
+      color: var(--muted);
     }
-    .ms-panel {
-      display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px);
-      max-height: 220px; overflow: auto; background: #fff;
-      border: 1px solid #d9d9d9; border-radius: 6px;
-      box-shadow: 0 6px 16px rgba(0,0,0,.12); z-index: 20; padding: 4px 0;
-    }
-    .ms-wrap.open .ms-panel { display: block; }
-    .ms-item {
-      display: flex; align-items: center; gap: 8px;
-      padding: 6px 12px; cursor: pointer; font-size: 13px;
-    }
-    .ms-item:hover { background: #f5f8fc; }
-    .ms-item input { width: auto; height: auto; margin: 0; }
-    .pager {
-      display: flex; justify-content: flex-end; align-items: center;
-      gap: 6px; padding: 6px 10px; color: var(--muted); background: #fff;
+
+    .pager, .footer-bar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      color: var(--muted);
+      background: #fff;
       border-top: 1px solid var(--border);
-      position: sticky; bottom: 0;
+      flex-shrink: 0;
       font-size: 13px;
     }
-    col.c-check { width: 20px; }
-    col.c-right { width: 12%; }
-    col.c-mark { width: 11%; }
-    col.c-usage { width: 10%; }
-    col.c-class { width: 5%; }
-    col.c-time { width: 11%; }
-    col.c-official { width: 11%; }
-    col.c-file { width: 7%; }
-    col.c-duty { width: 11%; }
-    col.c-extra { width: 10%; }
-    col.c-risk { width: 10%; }
+    .footer-stats { margin-right: auto; }
+    .footer-stats span { margin-right: 16px; }
+    .footer-stats .n { color: var(--text); font-weight: 600; }
+    .hidden { display: none !important; }
+
+    /* Drawer */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(29, 33, 41, 0.45);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      width: min(980px, 100%);
+      max-height: calc(100vh - 48px);
+      background: #fff;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+      animation: modalIn 0.2s ease;
+      overflow: hidden;
+    }
+    /* 部门审核：同域名注册审核弹窗宽度 */
+    .modal.review-modal {
+      width: 480px;
+      max-width: 92vw;
+      max-height: none;
+    }
+    @keyframes modalIn {
+      from { transform: translateY(12px) scale(0.98); opacity: 0.6; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .modal-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .modal-header p { display: none; }
+    .modal-close {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      color: var(--text-muted);
+      font-size: 20px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .modal-close:hover {
+      background: #f2f3f5;
+      color: var(--text);
+    }
+    .modal-body {
+      flex: 1;
+      overflow: auto;
+      padding: 16px 24px 8px;
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      background: #fff;
+      flex-shrink: 0;
+    }
+
+    .alert {
+      display: none;
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      margin-bottom: 12px;
+      line-height: 1.5;
+      border: 1px solid;
+    }
+    .alert.show { display: block; }
+    .alert-info {
+      background: var(--primary-soft);
+      border-color: #94bfff;
+      color: var(--primary);
+    }
+    .alert-warn {
+      background: var(--warn-soft);
+      border-color: #ffcf8b;
+      color: #b35c00;
+    }
+    .alert-danger {
+      background: var(--danger-soft);
+      border-color: #fbaca3;
+      color: var(--danger);
+    }
+
+    .section { margin-bottom: 18px; }
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    .section-head h4 {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-head h4::before {
+      content: "";
+      width: 3px;
+      height: 14px;
+      background: var(--primary);
+      border-radius: 1px;
+      flex-shrink: 0;
+    }
+    .chip { display: none; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px 12px;
+    }
+    .field {
+      display: grid;
+      grid-template-columns: 118px 1fr;
+      align-items: start;
+      column-gap: 8px;
+      row-gap: 4px;
+      min-width: 0;
+    }
+    .field.full { grid-column: 1 / -1; }
+    .field > label { grid-column: 1; }
+    .field > :not(label) { grid-column: 2; min-width: 0; }
+    .field label {
+      font-size: 13px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 2px;
+      min-height: 32px;
+      text-align: right;
+      line-height: 1.3;
+      flex-wrap: wrap;
+    }
+    .req { color: var(--danger); order: -1; margin-right: 2px; }
+    .p0, .p1, .p2, .source-chip, .field .hint { display: none; }
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      height: 32px;
+      padding: 0 10px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      outline: none;
+      background: #fff;
+      color: var(--text);
+    }
+    .field textarea {
+      height: auto;
+      min-height: 64px;
+      padding: 8px 10px;
+      resize: vertical;
+    }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--primary);
+    }
+    .field input:disabled,
+    .field select:disabled,
+    .field textarea:disabled {
+      background: #f7f8fa;
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+    .field.error input,
+    .field.error select,
+    .field.error textarea { border-color: var(--danger); }
+    .field .error-msg {
+      display: none;
+      font-size: 11px;
+      color: var(--danger);
+    }
+    .field.error .error-msg { display: block; }
+
+    .toast-wrap {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast {
+      padding: 10px 18px;
+      background: #1d2129;
+      color: #fff;
+      border-radius: var(--radius);
+      font-size: 13px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.16);
+      animation: fadeIn 0.2s ease;
+    }
+    .toast.ok { background: #00b42a; }
+    .toast.err { background: #f53f3f; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Dict page */
+    .dict-wrap {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    .dict-wrap table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .dict-wrap th {
+      position: sticky;
+      top: 0;
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .dict-wrap td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px 12px;
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+    .dict-wrap td:nth-child(3) { color: var(--text); font-weight: 500; }
+
+    .view { display: none; flex-direction: column; flex: 1; min-height: 0; gap: 0; overflow: hidden; }
+    .view.active { display: flex; }
+
+    .app-shell {
+      flex: 1;
+      min-height: 0;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .app-shell.active { display: flex; }
+    .app-shell iframe {
+      flex: 1;
+      width: 100%;
+      border: 0;
+      background: transparent;
+      min-height: 0;
+    }
+
+    @media (max-width: 960px) {
+      .grid { grid-template-columns: 1fr; }
+      .field, .field.full { grid-template-columns: 100px 1fr; }
+      .page { padding: 10px; }
+      .date-filter { flex-wrap: wrap; }
+    }
   </style>
 </head>
 <body>
   <div class="page">
-    <h1 class="title">商标台账管理</h1>
+    <nav class="menu-tabs" id="menuTabs" aria-label="功能菜单">
+      <button type="button" class="menu-tab active" data-app="brand" data-menu="register">品牌注册</button>
+      <button type="button" class="menu-tab" data-app="brand" data-menu="manage">品牌管理</button>
+      <button type="button" class="menu-tab" data-app="domain" data-menu="register">域名注册</button>
+      <button type="button" class="menu-tab" data-app="domain" data-menu="manage">域名管理</button>
+      <button type="button" class="menu-tab" data-app="email" data-menu="register">邮箱注册</button>
+      <button type="button" class="menu-tab" data-app="email" data-menu="manage">邮箱管理</button>
+    </nav>
+    <h1 class="page-title" id="pageTitle">品牌注册</h1>
 
-    <div class="filters">
-      <div class="filters-row">
-        <select id="fPlatform" title="备案平台">
-          <option value="">备案平台</option>
-          <option>Amazon</option>
-          <option>EBay</option>
-          <option>Aliexpress</option>
-          <option>Lazada</option>
-          <option>Shopee</option>
-          <option>MyMall</option>
-          <option>天猫</option>
-          <option>京东</option>
-        </select>
-        <select id="fProgress" title="申请进度">
-          <option value="">申请进度</option>
-          <option>审查中</option>
-          <option>审查已过</option>
-          <option>已提交资料</option>
-          <option>在准备资料</option>
-          <option>商标有误</option>
-          <option>已下证书</option>
-          <option>购买商标</option>
-          <option>购买中</option>
-          <option>已下受理通知</option>
-        </select>
-        <select id="fApplicant" title="申请人">
-          <option value="">申请人</option>
-          <option>张敏</option>
-          <option>王芳</option>
-          <option>赵磊</option>
-          <option>刘洋</option>
-        </select>
-        <select id="fTimeType" title="日期类型">
-          <option value="apply">申请日期</option>
-          <option value="reg">注册日期</option>
-          <option value="oath">宣誓日期</option>
-          <option value="cert">下证日期</option>
-          <option value="expire">到期日期</option>
-          <option value="warn">预警日</option>
-        </select>
-        <div class="date-range" id="dateRangeBox" title="开始日期 - 结束日期">
-          <span class="range-text" id="dateRangeText">开始日期 - 结束日期</span>
-          <input type="date" id="fStart" />
-          <input type="date" id="fEnd" />
-        </div>
-        <select id="fRenew" title="续展状态">
-          <option value="">续展状态</option>
-          <option>已续展</option>
-          <option>待续展</option>
-          <option>不续展</option>
-        </select>
-        <select id="fOath" title="宣誓状态">
-          <option value="">宣誓状态</option>
-          <option>已宣誓</option>
-          <option>待宣誓</option>
-          <option>不适用</option>
-        </select>
-        <div class="combo-search">
-          <select id="qField" title="搜索字段">
-            <option value="tmName" selected>商标名称</option>
-            <option value="company">公司名称</option>
-            <option value="registrar">注册商</option>
-            <option value="brandCode">品牌编码</option>
-            <option value="applyNo">申请号</option>
-            <option value="regNo">注册号</option>
-          </select>
-          <input id="q" type="text" placeholder="请输入" />
-        </div>
-        <button class="btn btn-primary btn-pill" onclick="doSearch()">搜索</button>
-        <button class="btn-link" onclick="doClear()">清空</button>
-      </div>
+    <div class="app-shell active" id="brandRegisterShell">
+      <iframe id="brandRegisterFrame" src="brand-registration.html?embed=1" title="品牌注册"></iframe>
+    </div>
+    <div class="app-shell" id="brandManageShell">
+      <iframe id="brandManageFrame" src="brand-management.html?embed=1" title="品牌管理"></iframe>
+    </div>
+    <div class="app-shell" id="domainShell">
+      <iframe id="domainFrame" src="domain-ledger.html?embed=1&menu=register" title="域名注册与管理"></iframe>
     </div>
 
-    <div class="toolbar">
-      <button class="btn btn-primary" onclick="openAddForm()">添加</button>
-      <button class="btn" onclick="openEditForm()">编辑</button>
-      <button class="btn btn-danger" onclick="requireSelect('删除')">删除</button>
-      <button class="btn" onclick="toast('打开【导入】对话框')">导入</button>
-      <button class="btn" onclick="toast('开始【导出】')">导出</button>
-      <button class="btn btn-ghost-teal" onclick="openUpload('受理回执')">上传受理回执</button>
-      <button class="btn btn-ghost-teal" onclick="openUpload('证书')">上传证书</button>
-    </div>
-
-    <div class="card">
-      <table>
-        <colgroup>
-          <col class="c-check" />
-          <col class="c-right" />
-          <col class="c-mark" />
-          <col class="c-usage" />
-          <col class="c-class" />
-          <col class="c-time" />
-          <col class="c-official" />
-          <col class="c-file" />
-          <col class="c-duty" />
-          <col class="c-extra" />
-          <col class="c-risk" />
-        </colgroup>
-        <thead>
-          <tr>
-            <th class="check"><input type="checkbox" id="checkAll" onchange="toggleAll(this.checked)" /></th>
-            <th>权利主体</th>
-            <th>商标标识</th>
-            <th>使用归属</th>
-            <th>分类与费用</th>
-            <th>关键时间节点</th>
-            <th>官方编号与状态</th>
-            <th>官方文件</th>
-            <th>义务维护</th>
-            <th>辅助信息</th>
-            <th>风险与合规</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-      <div class="pager" id="pager">共 0 条 · 每页 10 条 · 1 / 1</div>
-    </div>
-  </div>
-
-  <div class="toast" id="toast"></div>
-
-  <div class="modal-mask" id="modal">
-    <div class="modal">
-      <h3 id="modalTitle">上传文件</h3>
-      <p id="modalDesc">选择文件后确认上传（原型演示）。</p>
-      <input type="file" id="fileInput" />
-      <div class="actions">
-        <button class="btn" onclick="closeModal()">取消</button>
-        <button class="btn btn-primary" onclick="confirmUpload()">确认上传</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-mask" id="addModal">
-    <div class="modal modal-add">
-      <div class="modal-hd">
-        <h3 id="formTitle">添加</h3>
-        <button class="btn" onclick="closeAddForm()" title="关闭">×</button>
-      </div>
-      <div class="modal-bd" id="ledgerForm">
-        <div class="form-sec">
-          <h4>商标标识 / 权利主体</h4>
-          <div class="form-grid">
-            <div class="field">
-              <label><span class="req">*</span>商标类型</label>
-              <select id="fTmType"><option>文字</option><option>图形</option><option>组合</option><option>声音</option><option>颜色</option></select>
-            </div>
-            <div class="field">
-              <label><span class="req">*</span>商标名称</label>
-              <input id="fTmName" value="星云" />
-            </div>
-            <div class="field">
-              <label><span class="req">*</span>国别/地区</label>
-              <select id="fRegion"><option>中国</option><option>US</option><option>EU</option><option>JP</option><option>GB</option></select>
-            </div>
-            <!-- 品牌编码：仅编辑展示，添加时不展示 -->
-            <div class="field hidden" id="fieldBrandCode">
-              <label>品牌编码</label>
-              <input id="fBrandCode" disabled />
-            </div>
-            <div class="field">
-              <label>公司名称</label>
-              <input id="fCompany" value="星云科技有限公司" />
-            </div>
-            <div class="field">
-              <label>申请人</label>
-              <input id="fApplicantForm" value="张敏" readonly disabled />
-            </div>
-            <div class="field">
-              <label>注册商</label>
-              <input id="fRegistrar" value="华信知识产权代理有限公司" />
-            </div>
-            <div class="field">
-              <label>权利人类型</label>
-              <select id="fRightType">
-                <option value="">请选择</option>
-                <option>自有</option><option>关联方</option><option>供应商代持</option><option>自然人</option>
-              </select>
-            </div>
+    <div class="app-shell" id="emailShell">
+    <!-- LIST VIEW -->
+    <section class="view active" id="view-list">
+      <div class="filters">
+        <div class="filter-bar">
+          <div class="filter-item register-only" id="filterApplyStatusWrap">
+            <select id="filterApplyStatus">
+              <option value="">申请状态</option>
+              <option value="待部门审核">待部门审核</option>
+              <option value="已驳回">已驳回</option>
+            </select>
           </div>
-        </div>
-
-        <div class="form-sec">
-          <h4>使用归属</h4>
-          <div class="form-grid">
-            <div class="field">
-              <label><span class="req">*</span>使用人1</label>
-              <input id="fUser1" value="品牌部-张敏" />
-            </div>
-            <div class="field">
-              <label>备案平台1</label>
-              <select id="fFilingPlatform1">
-                <option value="">请选择</option>
-                <option>Amazon</option><option>EBay</option><option>Aliexpress</option>
-                <option>Lazada</option><option>Shopee</option><option>MyMall</option>
-                <option>天猫</option><option>京东</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>备案账号1</label>
-              <input id="fFilingAccount1" value="xy_brand_cn" />
-            </div>
-            <div class="field">
-              <label>授权账号1</label>
-              <input id="fAuthAccount1" value="xy_auth_01" />
-            </div>
-            <div class="field">
-              <label>使用人2</label>
-              <input id="fUser2" value="电商运营-李强" />
-            </div>
-            <div class="field">
-              <label>备案平台2</label>
-              <select id="fFilingPlatform2">
-                <option value="">请选择</option>
-                <option>Amazon</option><option>EBay</option><option>Aliexpress</option>
-                <option>Lazada</option><option>Shopee</option><option>MyMall</option>
-                <option>天猫</option><option>京东</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>备案账号2</label>
-              <input id="fFilingAccount2" value="xy_tmall" />
-            </div>
-            <div class="field">
-              <label>授权账号2</label>
-              <input id="fAuthAccount2" value="xy_auth_tm" />
-            </div>
+          <div class="filter-item">
+            <select id="filterDept" title="所属部门">
+              <option value="">所属部门</option>
+            </select>
           </div>
-        </div>
-
-        <div class="form-sec">
-          <h4>分类与关键时间节点</h4>
-          <div class="form-grid">
-            <div class="field field-top">
-              <label><span class="req">*</span>商标类别</label>
-              <div class="ms-wrap" id="niceClassMs">
-                <div class="ms-trigger" id="niceClassTrigger" tabindex="0"></div>
-                <div class="ms-panel" id="niceClassPanel"></div>
+          <div class="filter-item manage-only">
+            <select id="filterStatus">
+              <option value="">账号状态</option>
+              <option value="正常">正常</option>
+              <option value="停用">停用</option>
+              <option value="已删除">已删除</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <select id="filterType">
+              <option value="">邮箱类型</option>
+              <option value="公共邮箱">公共邮箱</option>
+              <option value="平台注册邮箱">平台注册邮箱</option>
+              <option value="售后邮箱">售后邮箱</option>
+              <option value="内部邮箱">内部邮箱</option>
+            </select>
+          </div>
+          <div class="filter-item manage-only">
+            <select id="filterPlatform">
+              <option value="">平台注册</option>
+              <option value="是">是</option>
+              <option value="否">否</option>
+            </select>
+          </div>
+          <div class="filter-item manage-only">
+            <select id="filterRisk">
+              <option value="">风险等级</option>
+              <option value="高">高</option>
+              <option value="中">中</option>
+              <option value="低">低</option>
+            </select>
+          </div>
+          <div class="filter-item manage-only">
+            <select id="filterStale">
+              <option value="">更新时效</option>
+              <option value="stale">超 90 天未更新</option>
+              <option value="fresh">90 天内已更新</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <div class="date-filter">
+              <select class="date-type-select" id="dateField" aria-label="时间字段">
+                <option value="openDate" class="manage-only">开通日期</option>
+                <option value="closeDate" class="manage-only">停用日期</option>
+                <option value="updatedAt">更新日期</option>
+                <option value="createdAt">创建日期</option>
+              </select>
+              <div class="date-range" id="dateRangeBox">
+                <span class="ph">开始日期 - 结束日期</span>
+                <div class="date-range-inputs">
+                  <input type="date" id="dateFrom" />
+                  <span class="sep">-</span>
+                  <input type="date" id="dateTo" />
+                </div>
               </div>
             </div>
-            <div class="field">
-              <label>申请日期</label>
-              <input id="fApplyDate" type="date" value="2024-03-12" />
-            </div>
-            <div class="field">
-              <label>注册日期</label>
-              <input id="fRegDate" type="date" value="2025-01-08" />
-            </div>
-            <div class="field">
-              <label>宣誓日期</label>
-              <input id="fOathDate" type="date" />
-            </div>
-            <div class="field">
-              <label>下证日期</label>
-              <input id="fCertDate" type="date" value="2025-01-20" />
-            </div>
-            <div class="field">
-              <label>到期日期</label>
-              <input id="fExpireDate" type="date" value="2035-01-07" />
-            </div>
-            <div class="field">
-              <label>预警日</label>
-              <input id="fWarnDate" type="date" value="2034-07-07" disabled />
+          </div>
+          <div class="filter-item">
+            <div class="search-combo">
+              <select id="searchField" aria-label="搜索字段">
+                <option value="email">邮箱地址</option>
+                <option value="emailId">邮箱ID</option>
+                <option value="domain">所属域名</option>
+                <option value="store" class="manage-only">绑定店铺</option>
+                <option value="storeId" class="manage-only">店铺ID</option>
+                <option value="provider" class="manage-only">服务商</option>
+              </select>
+              <input type="text" id="searchInput" placeholder="请输入" />
             </div>
           </div>
-        </div>
-
-        <div class="form-sec">
-          <h4>官方编号 / 文件 / 义务维护</h4>
-          <div class="form-grid">
-            <div class="field">
-              <label>申请号</label>
-              <input id="fApplyNo" value="TM20240312001" />
-            </div>
-            <div class="field">
-              <label>注册号</label>
-              <input id="fRegNo" value="R20250108088" />
-            </div>
-            <div class="field">
-              <label>申请进度</label>
-              <select id="fProgressForm">
-                <option value="">请选择</option>
-                <option>审查中</option>
-                <option>审查已过</option>
-                <option>已提交资料</option>
-                <option>在准备资料</option>
-                <option>商标有误</option>
-                <option>已下证书</option>
-                <option>购买商标</option>
-                <option>购买中</option>
-                <option>已下受理通知</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>受理回执</label>
-              <input id="fReceipt" type="file" />
-            </div>
-            <div class="field">
-              <label>证书</label>
-              <input id="fCertFile" type="file" />
-            </div>
-            <div class="field">
-              <label>续展状态</label>
-              <select id="fRenewForm">
-                <option value="">请选择</option>
-                <option>已续展</option><option>待续展</option><option>不续展</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>宣誓状态</label>
-              <select id="fOathForm">
-                <option value="">请选择</option>
-                <option>已宣誓</option><option>待宣誓</option><option>不适用</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>续展代理</label>
-              <input id="fRenewAgent" value="华信知识产权代理" />
-            </div>
-            <div class="field">
-              <label>宣誓代理</label>
-              <input id="fOathAgent" value="" />
-            </div>
-          </div>
-        </div>
-
-        <div class="form-sec">
-          <h4>辅助信息</h4>
-          <div class="form-grid">
-            <div class="field">
-              <label>查询通过率</label>
-              <div class="input-affix">
-                <input id="fPassRate" type="number" min="0" max="100" step="1" value="92" placeholder="0-100" />
-                <span class="affix">%</span>
-              </div>
-            </div>
-            <div class="field">
-              <label>备用邮箱</label>
-              <input id="fEmail" value="ip@xingyun.com" />
-            </div>
-            <div class="field">
-              <label>备注</label>
-              <input id="fRemark" value="核心品牌，优先维护" />
-            </div>
+          <div class="filter-actions">
+            <button class="btn btn-primary btn-pill" type="button" id="btnSearch">搜索</button>
+            <button class="btn-link" type="button" id="btnClear">清空</button>
           </div>
         </div>
       </div>
-      <div class="modal-ft">
-        <button class="btn" onclick="closeAddForm()">取消</button>
-        <button class="btn btn-primary" onclick="confirmAdd()">确定</button>
+
+      <div class="toolbar" id="toolbarRegister">
+        <button class="btn btn-primary" type="button" id="btnApply">申请注册</button>
+        <button class="btn btn-default" type="button" id="btnEdit">编辑</button>
+        <button class="btn btn-danger" type="button" id="btnBatchDelete">删除</button>
+        <button class="btn btn-default" type="button" id="btnImport">导入</button>
+        <button class="btn btn-default" type="button" id="btnExport">导出</button>
+        <button class="btn btn-default" type="button" id="btnReview">部门审核</button>
+      </div>
+      <div class="toolbar" id="toolbarManage" style="display:none">
+        <button class="btn btn-primary" type="button" id="btnManageEdit">编辑</button>
+        <button class="btn btn-default" type="button" id="btnManageImport">导入</button>
+        <button class="btn btn-default" type="button" id="btnManageExport">导出</button>
+      </div>
+
+      <div class="table-panel">
+        <div class="table-scroll">
+          <table class="ledger" id="listTable">
+            <colgroup id="listColgroup"></colgroup>
+            <thead>
+              <tr id="listHeadRow"></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+          <div class="empty" id="emptyState" style="display:none">暂无匹配记录</div>
+        </div>
+        <div class="pager" id="pager">
+          <div class="footer-stats">
+            <span>共 <span class="n" id="statTotal">0</span> 条</span>
+            <span>正常 <span class="n" id="statNormal">0</span></span>
+            <span>平台注册 <span class="n" id="statPlatform">0</span></span>
+            <span>超90天 <span class="n" id="statStale">0</span></span>
+            <span>高风险 <span class="n" id="statHigh">0</span></span>
+          </div>
+          <span id="pagerText">每页 10 条 · 1 / 1</span>
+        </div>
+      </div>
+    </section>
+    </div><!-- /emailShell -->
+
+  </div>
+
+  <!-- Modal -->
+  <div class="overlay" id="overlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+      <div class="modal-header">
+        <div>
+          <h3 id="drawerTitle">申请注册</h3>
+          <p id="drawerSubtitle">按字段字典填写；P0 字段优先校验</p>
+        </div>
+        <button class="modal-close" type="button" id="btnClose" aria-label="关闭">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info" id="roleAlert"></div>
+        <div class="alert alert-warn" id="staleAlert">该记录数据更新时间已超过 90 天，请尽快核实并保存以刷新维护时间。</div>
+        <div class="alert alert-danger" id="formError"></div>
+
+        <form id="emailForm" novalidate>
+          <div class="section" id="sectionAsset">
+            <div class="section-head">
+              <h4>资产标识</h4>
+              <span class="chip chip-blue">申请人</span>
+            </div>
+            <div class="grid">
+              <div class="field full" data-source="applicant">
+                <label>邮箱地址 <span class="req">*</span> <span class="p0">P0</span> <span class="source-chip">申请人</span></label>
+                <input name="email" type="email" placeholder="service@sodial.com" autocomplete="off" />
+                <span class="hint">完整地址，小写</span>
+                <span class="error-msg">请填写有效邮箱地址</span>
+              </div>
+              <div class="field" data-source="system" id="fieldEmailId">
+                <label>邮箱 ID <span class="p1">P1</span> <span class="source-chip">系统生成</span></label>
+                <input name="emailId" type="text" disabled placeholder="保存后自动生成，如 YX2026111601" />
+              </div>
+              <div class="field" data-source="applicant">
+                <label>邮箱类型 <span class="req">*</span> <span class="p0">P0</span> <span class="source-chip">申请人</span></label>
+                <select name="emailType">
+                  <option value="">请选择</option>
+                  <option>公共邮箱</option>
+                  <option>平台注册邮箱</option>
+                  <option>售后邮箱</option>
+                  <option>内部邮箱</option>
+                </select>
+                <span class="error-msg">请选择邮箱类型</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="section" id="sectionBrand">
+            <div class="section-head">
+              <h4>品牌与域名</h4>
+              <span class="chip chip-gray">申请人 / 系统</span>
+            </div>
+            <div class="grid">
+              <div class="field" data-source="applicant">
+                <label>所属域名 <span class="req">*</span> <span class="p0">P0</span> <span class="source-chip">申请人</span></label>
+                <select name="domain" id="domainSelect">
+                  <option value="">请选择</option>
+                  <option>sodial.com</option>
+                  <option>sodial.co.uk</option>
+                  <option>sodial.de</option>
+                  <option>example-brand.com</option>
+                </select>
+                <span class="hint">需与域名台账一致</span>
+                <span class="error-msg">请选择所属域名</span>
+              </div>
+              <div class="field" data-source="system" data-admin-edit="true" id="fieldOwner">
+                <label>使用人1 <span class="req">*</span> <span class="p0">P0</span> <span class="source-chip">按域名带出</span></label>
+                <input name="owner" type="text" placeholder="选择域名后自动带出" readonly />
+                <span class="error-msg">请填写使用人1</span>
+              </div>
+              <div class="field" data-source="system" id="fieldDepartment">
+                <label>所属部门 <span class="p1">P1</span> <span class="source-chip">按域名带出</span></label>
+                <input name="department" type="text" disabled placeholder="选择域名后自动带出" />
+              </div>
+            </div>
+          </div>
+
+          <div class="section" id="sectionPlatform">
+            <div class="section-head">
+              <h4>平台绑定</h4>
+              <span class="chip chip-blue">申请人</span>
+            </div>
+            <div class="grid">
+              <div class="field" data-source="applicant">
+                <label>是否用于平台注册 <span class="req">*</span> <span class="p0">P0</span> <span class="source-chip">申请人</span></label>
+                <select name="forPlatform" id="forPlatform">
+                  <option value="">请选择</option>
+                  <option value="是">是</option>
+                  <option value="否">否</option>
+                </select>
+                <span class="hint">丢失可能导致店铺冻结</span>
+                <span class="error-msg">请选择是否用于平台注册</span>
+              </div>
+              <div class="field platform-dep" data-source="applicant">
+                <label>绑定平台 <span class="req">*</span> <span class="p0">P0</span> <span class="source-chip">条件必填</span></label>
+                <select name="platform">
+                  <option value="">请选择</option>
+                  <option>Amazon</option>
+                  <option>eBay</option>
+                  <option>Shopee</option>
+                  <option>TikTok Shop</option>
+                  <option>Walmart</option>
+                  <option>其他</option>
+                </select>
+                <span class="error-msg">用于平台注册时必填</span>
+              </div>
+              <div class="field platform-dep" data-source="applicant">
+                <label>绑定站点 <span class="req">*</span> <span class="p1">P1</span> <span class="source-chip">条件必填</span></label>
+                <input name="site" type="text" placeholder="如：US / UK / DE" />
+                <span class="error-msg">用于平台注册时必填</span>
+              </div>
+              <div class="field platform-dep" data-source="applicant">
+                <label>绑定店铺 <span class="req">*</span> <span class="p0">P0</span> <span class="source-chip">条件必填</span></label>
+                <input name="store" type="text" placeholder="如：SODIAL-US-01" />
+                <span class="error-msg">用于平台注册时必填</span>
+              </div>
+              <div class="field platform-dep" data-source="applicant">
+                <label>店铺 ID <span class="req">*</span> <span class="p1">P1</span> <span class="source-chip">条件必填</span></label>
+                <input name="storeId" type="text" placeholder="如：A1B2C3D4" />
+                <span class="error-msg">用于平台注册时必填</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="section" id="sectionProvider">
+            <div class="section-head">
+              <h4>服务商与费用</h4>
+              <span class="chip chip-orange">管理员</span>
+            </div>
+            <div class="grid">
+              <div class="field" data-source="admin">
+                <label>邮箱服务商 <span class="req">*</span> <span class="p0">P0</span> <span class="source-chip">管理员</span></label>
+                <select name="provider">
+                  <option value="">请选择</option>
+                  <option>腾讯企业邮</option>
+                  <option>阿里企业邮</option>
+                  <option>Google Workspace</option>
+                  <option>Zoho</option>
+                  <option>其他</option>
+                </select>
+                <span class="error-msg">请选择邮箱服务商</span>
+              </div>
+              <div class="field" data-source="admin">
+                <label>开通日期 <span class="req">*</span> <span class="p1">P1</span> <span class="source-chip">管理员</span></label>
+                <input name="openDate" type="date" />
+                <span class="error-msg">请填写开通日期</span>
+              </div>
+              <div class="field" data-source="admin">
+                <label>停用日期 <span class="p2">P2</span> <span class="source-chip">管理员</span></label>
+                <input name="closeDate" type="date" />
+                <span class="hint">停用后数据建议保留 90 天</span>
+              </div>
+              <div class="field" data-source="admin">
+                <label>收费方式 <span class="p2">P2</span> <span class="source-chip">管理员</span></label>
+                <input name="billing" type="text" placeholder="如：付费版，5 个账号" />
+              </div>
+              <div class="field" data-source="admin" id="fieldConfirmOpenAt" style="display:none">
+                <label>确认开通时间 <span class="p1">P1</span> <span class="source-chip">管理员</span></label>
+                <input name="confirmOpenAt" type="datetime-local" step="1" />
+              </div>
+            </div>
+          </div>
+
+          <div class="section" id="sectionStatus">
+            <div class="section-head">
+              <h4>状态与风险</h4>
+              <span class="chip chip-orange">管理员</span>
+            </div>
+            <div class="grid">
+              <div class="field" data-source="admin">
+                <label>申请状态 <span class="req">*</span> <span class="p0">P0</span> <span class="source-chip">管理员</span></label>
+                <select name="applyStatus">
+                  <option value="">请选择</option>
+                  <option>待部门审核</option>
+                  <option>待开通</option>
+                  <option>已开通</option>
+                  <option>已驳回</option>
+                </select>
+                <span class="error-msg">请选择申请状态</span>
+              </div>
+              <div class="field" data-source="admin">
+                <label>账号状态 <span class="req">*</span> <span class="p0">P0</span> <span class="source-chip">管理员</span></label>
+                <select name="status">
+                  <option value="">请选择</option>
+                  <option>正常</option>
+                  <option>停用</option>
+                  <option>已删除</option>
+                </select>
+                <span class="error-msg">请选择账号状态</span>
+              </div>
+              <div class="field" data-source="admin">
+                <label>风险等级 <span class="p0">P0</span> <span class="source-chip">管理员</span></label>
+                <select name="risk">
+                  <option value="">请选择</option>
+                  <option value="高">高（个人持有）</option>
+                  <option value="中">中（信息不完整）</option>
+                  <option value="低">低（规范化）</option>
+                </select>
+              </div>
+              <div class="field full" data-source="admin">
+                <label>备注 <span class="p2">P2</span> <span class="source-chip">管理员</span></label>
+                <textarea name="remark" placeholder="特殊情况说明，如：Amazon 主账号"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="section" id="sectionAudit">
+            <div class="section-head">
+              <h4>审核信息</h4>
+              <span class="chip chip-orange">管理员</span>
+            </div>
+            <div class="grid">
+              <div class="field" data-source="admin">
+                <label>部门审核人 <span class="p1">P1</span> <span class="source-chip">管理员</span></label>
+                <input name="deptReviewer" type="text" placeholder="部门审核通过后填写" />
+              </div>
+              <div class="field" data-source="admin">
+                <label>部门审核时间 <span class="p1">P1</span> <span class="source-chip">管理员</span></label>
+                <input name="deptReviewAt" type="date" />
+              </div>
+              <div class="field full" data-source="admin">
+                <label>驳回备注 <span class="p1">P1</span> <span class="source-chip">管理员</span></label>
+                <textarea name="rejectRemark" placeholder="部门审核驳回时填写"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="section" id="sectionMaintain">
+            <div class="section-head">
+              <h4>系统信息</h4>
+              <span class="chip chip-gray">系统生成</span>
+            </div>
+            <div class="grid">
+              <div class="field" data-source="system">
+                <label>创建人 <span class="req">*</span> <span class="p1">P1</span> <span class="source-chip">系统生成</span></label>
+                <input name="creator" type="text" disabled />
+              </div>
+              <div class="field" data-source="system">
+                <label>创建时间 <span class="req">*</span> <span class="p1">P1</span> <span class="source-chip">系统生成</span></label>
+                <input name="createdAt" type="datetime-local" step="1" disabled />
+              </div>
+              <div class="field" data-source="system">
+                <label>更新人 <span class="req">*</span> <span class="p1">P1</span> <span class="source-chip">系统生成</span></label>
+                <input name="maintainer" type="text" disabled />
+              </div>
+              <div class="field" data-source="system">
+                <label>更新时间 <span class="req">*</span> <span class="p1">P1</span> <span class="source-chip">系统生成</span></label>
+                <input name="updatedAt" type="datetime-local" step="1" disabled />
+                <span class="hint">超过 90 天未更新将黄灯提醒</span>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" type="button" id="btnCancel">取消</button>
+        <button class="btn btn-primary" type="button" id="btnSave">确定</button>
       </div>
     </div>
   </div>
+
+  <!-- 部门审核弹窗（同域名注册） -->
+  <div class="overlay" id="reviewOverlay">
+    <div class="modal review-modal" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+      <div class="modal-header">
+        <div>
+          <h3 id="reviewTitle">部门审核</h3>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="review-form">
+          <div class="review-row" id="reviewResultRow">
+            <span class="label"><span class="req">*</span>审核结果</span>
+            <div class="radio-group">
+              <label><input type="radio" name="reviewAuditResult" value="通过" checked /> 通过</label>
+              <label><input type="radio" name="reviewAuditResult" value="驳回" /> 驳回</label>
+            </div>
+            <div class="error-msg">请选择通过或驳回</div>
+          </div>
+          <div class="review-row top" id="reviewRemarkRow">
+            <span class="label" id="reviewRemarkLabel">驳回备注</span>
+            <textarea id="reviewRejectRemark" rows="2" placeholder="驳回时必填"></textarea>
+            <div class="error-msg">驳回时请填写驳回备注</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" type="button" id="btnReviewCancel">取消</button>
+        <button class="btn btn-primary" type="button" id="btnReviewOk">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 导入确认开通弹窗 -->
+  <div class="overlay" id="importOverlay">
+    <div class="modal" style="width:min(560px,100%);max-height:none" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <div>
+          <h3>导入确认开通</h3>
+          <p style="display:block;font-size:12px;color:var(--text-muted);margin-top:4px">上传 CSV，按邮箱匹配「待开通」记录并批量确认开通</p>
+        </div>
+        <button class="modal-close" type="button" id="btnImportClose" aria-label="关闭">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info show">
+          CSV 表头建议：邮箱地址,确认开通时间,服务商,开通日期,收费方式<br />
+          示例：tiktok-de@sodial.de,2026-11-17 18:00:00,Zoho,2025-08-20,付费版
+        </div>
+        <div class="toolbar" style="padding:0;margin-bottom:12px;gap:8px">
+          <button class="btn btn-default" type="button" id="btnDownloadTpl">下载模板</button>
+          <button class="btn btn-primary" type="button" id="btnPickImportFile">选择 CSV 文件</button>
+        </div>
+        <div id="importPreview" style="font-size:12px;color:var(--text-secondary);line-height:1.6;max-height:200px;overflow:auto;border:1px solid var(--border);border-radius:4px;padding:10px;background:#fafafa;display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" type="button" id="btnImportCancel">取消</button>
+        <button class="btn btn-primary" type="button" id="btnImportDo" disabled>确认导入开通</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toasts"></div>
 
   <script>
-    // 一个商标多类拆成多行；空值用 ""，列表展示为空
-    // 示例数据与最新字段口径对齐：备案平台枚举、续展/宣誓状态、下证日期、国别选项
-    const baseRows = [
-      {
-        company: "星云科技有限公司",
-        applicant: "张敏",
-        registrar: "华信知识产权代理有限公司",
-        rightType: "自有",
-        tmType: "文字",
-        tmName: "星云",
-        region: "中国",
-        brandCode: "CN2024031201",
-        user1: "品牌部-张敏",
-        filingPlatform1: "Amazon",
-        filingAccount1: "xy_amz_cn",
-        authAccount1: "xy_auth_amz",
-        user2: "电商运营-李强",
-        filingPlatform2: "天猫",
-        filingAccount2: "xy_tmall",
-        authAccount2: "xy_auth_tm",
-        niceClasses: ["第9类", "第35类", "第42类"],
-        applyDate: "2024-03-12",
-        regDate: "2025-01-08",
-        oathDate: "",
-        certDate: "2025-01-20",
-        expireDate: "2035-01-07",
-        warnDate: "2034-07-07",
-        applyNo: "TM20240312001",
-        regNo: "R20250108088",
-        progress: "已下证书",
-        progressClass: "tag-green",
-        receipt: "查看回执",
-        cert: "查看证书",
-        renew: "已续展",
-        oath: "不适用",
-        renewAgent: "华信知识产权代理",
-        oathAgent: "",
-        passRate: "92%",
-        email: "ip@xingyun.com",
-        remark: "核心品牌，优先维护",
-        creator: "张敏",
-        createTime: "2024-03-12 10:20",
-        updater: "李强",
-        updateTime: "2026-11-10 15:06",
-      },
-      {
-        company: "海蓝贸易有限公司",
-        applicant: "王芳",
-        registrar: "正衡商标代理事务所",
-        rightType: "关联方",
-        tmType: "组合",
-        tmName: "海蓝",
-        region: "EU",
-        brandCode: "EU2025061802",
-        user1: "市场中心-王芳",
-        filingPlatform1: "Shopee",
-        filingAccount1: "hl_shopee",
-        authAccount1: "hl_auth_01",
-        user2: "",
-        filingPlatform2: "",
-        filingAccount2: "",
-        authAccount2: "",
-        niceClasses: ["第3类", "第5类"],
-        applyDate: "2025-06-18",
-        regDate: "",
-        oathDate: "",
-        certDate: "",
-        expireDate: "",
-        warnDate: "",
-        applyNo: "TM20250618022",
-        regNo: "",
-        progress: "审查已过",
-        progressClass: "tag-blue",
-        receipt: "查看回执",
-        cert: "",
-        renew: "",
-        oath: "不适用",
-        renewAgent: "",
-        oathAgent: "",
-        passRate: "78%",
-        email: "legal@hailan.com",
-        remark: "欧盟申请中，备案平台2未填（选填）",
-        creator: "王芳",
-        createTime: "2025-06-18 09:12",
-        updater: "王芳",
-        updateTime: "2026-11-08 11:30",
-      },
-      {
-        company: "青禾食品股份有限公司",
-        applicant: "赵磊",
-        registrar: "中联知识产权代理中心",
-        rightType: "供应商代持",
-        tmType: "图形",
-        tmName: "青禾",
-        region: "US",
-        brandCode: "US2022061807",
-        user1: "法务部-赵磊",
-        filingPlatform1: "EBay",
-        filingAccount1: "qh_ebay",
-        authAccount1: "qh_auth_01",
-        user2: "渠道部-陈雪",
-        filingPlatform2: "京东",
-        filingAccount2: "qh_jd",
-        authAccount2: "qh_auth_jd",
-        niceClasses: ["第29类", "第30类", "第32类"],
-        applyDate: "2022-06-18",
-        regDate: "2023-02-20",
-        oathDate: "2028-02-20",
-        certDate: "2023-03-05",
-        expireDate: "2033-02-19",
-        warnDate: "2027-08-20",
-        applyNo: "TM20220618077",
-        regNo: "R20230220115",
-        progress: "已下证书",
-        progressClass: "tag-orange",
-        receipt: "查看回执",
-        cert: "查看证书",
-        renew: "待续展",
-        oath: "待宣誓",
-        renewAgent: "正衡商标代理",
-        oathAgent: "正衡商标代理",
-        passRate: "85%",
-        email: "tm@qinghefood.com",
-        remark: "美国商标，宣誓日临近预警",
-        creator: "赵磊",
-        createTime: "2022-06-18 14:05",
-        updater: "陈雪",
-        updateTime: "2026-11-12 16:42",
-      },
-      {
-        company: "晨光家居有限公司",
-        applicant: "刘洋",
-        registrar: "",
-        rightType: "",
-        tmType: "文字",
-        tmName: "晨光+",
-        region: "中国",
-        brandCode: "",
-        user1: "运营部-刘洋",
-        filingPlatform1: "",
-        filingAccount1: "",
-        authAccount1: "",
-        user2: "",
-        filingPlatform2: "",
-        filingAccount2: "",
-        authAccount2: "",
-        niceClasses: ["第11类", "第21类"],
-        applyDate: "2026-11-01",
-        regDate: "",
-        oathDate: "",
-        certDate: "",
-        expireDate: "",
-        warnDate: "",
-        applyNo: "TM20261101009",
-        regNo: "",
-        progress: "已下受理通知",
-        progressClass: "tag-blue",
-        receipt: "查看回执",
-        cert: "",
-        renew: "",
-        oath: "不适用",
-        renewAgent: "",
-        oathAgent: "",
-        passRate: "70%",
-        email: "brand@chenguang.com",
-        remark: "新申请：权利人类型/备案平台选填未填，品牌编码待注册成功后生成",
-        creator: "刘洋",
-        createTime: "2026-11-01 10:08",
-        updater: "刘洋",
-        updateTime: "2026-11-15 09:20",
-      },
+    const USERS = {
+      applicant: { name: "张三", dept: "跨境运营部" },
+      admin: { name: "李四", dept: "IT 运维部" }
+    };
+
+    /** 域名台账关联：使用人1 / 所属部门 */
+    const DOMAIN_MAP = {
+      "sodial.com": { owner: "张三", department: "跨境运营部" },
+      "sodial.co.uk": { owner: "王五", department: "欧洲站运营" },
+      "sodial.de": { owner: "张三", department: "跨境运营部" },
+      "example-brand.com": { owner: "赵六", department: "品牌中心" }
+    };
+
+    const DICT = [
+      ["N01","资产标识","邮箱地址","完整地址，小写","申请人","必填","文本","service@sodial.com","P0"],
+      ["N02","资产标识","邮箱ID","YX+YYYYMMDD+2位流水","系统生成","选填","文本","YX2026111601","P1"],
+      ["N03","资产标识","邮箱类型","公共/平台注册/售后/内部","申请人","必填","枚举","平台注册邮箱","P0"],
+      ["N04","品牌与域名","所属域名","需与域名台账一致","申请人","必填","枚举","sodial.com","P0"],
+      ["N05","品牌与域名","使用人1","使用责任人；默认申请人，管理员可改","系统生成","必填","文本","张三","P0"],
+      ["N06","品牌与域名","所属部门","使用人1 所属部门","系统生成","选填","文本","跨境运营部","P1"],
+      ["N07","服务商与费用","邮箱服务商","腾讯/阿里/Google/Zoho 等","管理员","必填","枚举","Google Workspace","P0"],
+      ["N08","服务商与费用","开通日期","邮箱开通日期","管理员","必填","日期","2025-01-10","P1"],
+      ["N09","服务商与费用","停用日期","停用后建议保留 90 天","管理员","选填","日期","—","P2"],
+      ["N11","服务商与费用","收费方式","免费/付费/按账号","管理员","选填","文本","付费版，5 个账号","P2"],
+      ["N11a","服务商与费用","确认开通时间","确认开通的具体时间，含时分秒","管理员","选填","日期时间","2025-01-10 14:30:00","P1"],
+      ["N12","平台绑定","是否用于平台注册","丢失可能导致店铺冻结","申请人","必填","枚举","是","P0"],
+      ["N13","平台绑定","绑定平台","Amazon / eBay / Shopee 等","申请人","条件必填","枚举","Amazon","P0"],
+      ["N14","平台绑定","绑定站点","如 US / UK / DE","申请人","条件必填","文本","US","P1"],
+      ["N15","平台绑定","绑定店铺","店铺名称","申请人","条件必填","文本","SODIAL-US-01","P0"],
+      ["N16","平台绑定","店铺ID","平台侧唯一 ID","申请人","条件必填","文本","A1B2C3D4","P1"],
+      ["N17","状态与风险","申请状态","待部门审核/已驳回/已开通","管理员","必填","枚举","已开通","P0"],
+      ["N18","状态与风险","账号状态","正常/停用/已删除","管理员","必填","枚举","正常","P0"],
+      ["N19","状态与风险","风险等级","高/中/低","管理员","选填","枚举","低","P0"],
+      ["N20","状态与风险","备注","特殊情况说明","管理员","选填","文本","Amazon 主账号","P2"],
+      ["N21","审核信息","部门审核人","部门审核通过人","管理员","选填","文本","王主管","P1"],
+      ["N22","审核信息","部门审核时间","部门审核通过时间","管理员","选填","日期","2025-01-08","P1"],
+      ["N22a","审核信息","驳回备注","部门审核驳回原因","管理员","条件必填","文本","资料不全","P1"],
+      ["N23","系统信息","创建人","首次创建人","系统生成","必填","文本","张三","P1"],
+      ["N24","系统信息","创建时间","首次创建时间，含时分秒","系统生成","必填","日期时间","2025-01-10 09:20:15","P1"],
+      ["N25","系统信息","更新人","最后更新人","系统生成","必填","文本","李四","P1"],
+      ["N26","系统信息","更新时间","超 90 天黄灯提醒，含时分秒","系统生成","必填","日期时间","2026-11-05 16:42:08","P1"]
     ];
 
-    const rows = baseRows.flatMap((item) =>
-      item.niceClasses.map((niceClass) => {
-        const { niceClasses, ...rest } = item;
-        return { ...rest, niceClass };
-      })
-    );
-
-    function display(value) {
-      return value == null || value === "" ? "" : value;
-    }
-
-    function kv(label, value, isLink) {
-      const raw = display(value);
-      const val = isLink && raw
-        ? `<a class="link" href="javascript:void(0)" onclick="toast('打开：${raw}')">${raw}</a>`
-        : raw;
-      return `<div><span class="label">${label}：</span><span class="val">${val}</span></div>`;
-    }
-
-    function progressCell(r) {
-      const text = display(r.progress);
-      if (!text) {
-        return `<div><span class="label">申请进度：</span><span class="val"></span></div>`;
+    const SEED = [
+      {
+        id: "1", email: "service@sodial.com", emailId: "YX2025011001", emailType: "售后邮箱",
+        domain: "sodial.com", owner: "张三", department: "跨境运营部",
+        provider: "Google Workspace", openDate: "2025-01-10", closeDate: "", status: "正常",
+        billing: "付费版，5 个账号", confirmOpenAt: "2025-01-10 14:30:00",
+        forPlatform: "否", platform: "", site: "", store: "", storeId: "",
+        applyStatus: "已开通", risk: "低", remark: "",
+        deptReviewer: "王主管", deptReviewAt: "2025-01-08", rejectRemark: "",
+        creator: "张三", createdAt: "2025-01-05 09:20:15", maintainer: "李四", updatedAt: "2026-11-05 16:42:08"
+      },
+      {
+        id: "2", email: "amazon-us@sodial.com", emailId: "YX2024061801", emailType: "平台注册邮箱",
+        domain: "sodial.com", owner: "张三", department: "跨境运营部",
+        provider: "腾讯企业邮", openDate: "2024-06-18", closeDate: "", status: "正常",
+        billing: "按账号收费", confirmOpenAt: "2024-06-18 10:15:22",
+        forPlatform: "是", platform: "Amazon", site: "US",
+        store: "SODIAL-US-01", storeId: "A1B2C3D4",
+        applyStatus: "已开通", risk: "中", remark: "Amazon 主账号",
+        deptReviewer: "王主管", deptReviewAt: "2024-06-15", rejectRemark: "",
+        creator: "张三", createdAt: "2024-06-10 11:05:33", maintainer: "李四", updatedAt: "2026-08-01 09:18:45"
+      },
+      {
+        id: "3", email: "ebay-uk@sodial.co.uk", emailId: "YX2023110201", emailType: "平台注册邮箱",
+        domain: "sodial.co.uk", owner: "王五", department: "欧洲站运营",
+        provider: "阿里企业邮", openDate: "2023-11-02", closeDate: "", status: "正常",
+        billing: "付费版", confirmOpenAt: "2023-11-02 16:40:10",
+        forPlatform: "是", platform: "eBay", site: "UK",
+        store: "SODIAL-UK", storeId: "EB998877",
+        applyStatus: "已开通", risk: "高", remark: "个人历史注册，待迁移",
+        deptReviewer: "刘经理", deptReviewAt: "2023-10-28", rejectRemark: "",
+        creator: "王五", createdAt: "2023-10-20 14:22:01", maintainer: "李四", updatedAt: "2026-06-12 18:05:29"
+      },
+      {
+        id: "4", email: "hr@sodial.com", emailId: "YX2022030101", emailType: "内部邮箱",
+        domain: "sodial.com", owner: "赵六", department: "人力资源部",
+        provider: "Google Workspace", openDate: "2022-03-01", closeDate: "2026-09-01", status: "停用",
+        billing: "免费版", confirmOpenAt: "2022-03-01 09:00:00",
+        forPlatform: "否", platform: "", site: "", store: "", storeId: "",
+        applyStatus: "已开通", risk: "低", remark: "组织架构调整停用",
+        deptReviewer: "周主管", deptReviewAt: "2022-02-25", rejectRemark: "",
+        creator: "赵六", createdAt: "2022-02-20 10:30:00", maintainer: "李四", updatedAt: "2026-09-01 11:12:36"
+      },
+      {
+        id: "5", email: "tiktok-de@sodial.de", emailId: "YX2025082001", emailType: "平台注册邮箱",
+        domain: "sodial.de", owner: "张三", department: "跨境运营部",
+        provider: "Zoho", openDate: "2025-08-20", closeDate: "", status: "正常",
+        billing: "付费版，2 个账号", confirmOpenAt: "",
+        forPlatform: "是", platform: "TikTok Shop", site: "DE",
+        store: "SODIAL-DE-TT", storeId: "TT778899",
+        applyStatus: "已开通", risk: "低", remark: "",
+        deptReviewer: "王主管", deptReviewAt: "2025-08-18", rejectRemark: "",
+        creator: "张三", createdAt: "2025-08-15 15:48:20", maintainer: "张三", updatedAt: "2026-11-10 08:25:11"
+      },
+      {
+        id: "6", email: "newshop@sodial.com", emailId: "YX2026111601", emailType: "平台注册邮箱",
+        domain: "sodial.com", owner: "张三", department: "跨境运营部",
+        provider: "", openDate: "", closeDate: "", status: "",
+        billing: "", confirmOpenAt: "",
+        forPlatform: "是", platform: "Shopee", site: "SG",
+        store: "SODIAL-SG-01", storeId: "SH112233",
+        applyStatus: "待部门审核", risk: "", remark: "",
+        deptReviewer: "", deptReviewAt: "", rejectRemark: "",
+        creator: "张三", createdAt: "2026-11-16 13:05:42", maintainer: "张三", updatedAt: "2026-11-16 13:05:42"
+      },
+      {
+        id: "7", email: "reject-demo@sodial.com", emailId: "YX2026111001", emailType: "公共邮箱",
+        domain: "sodial.com", owner: "张三", department: "跨境运营部",
+        provider: "", openDate: "", closeDate: "", status: "",
+        billing: "", confirmOpenAt: "",
+        forPlatform: "否", platform: "", site: "", store: "", storeId: "",
+        applyStatus: "已驳回", risk: "", remark: "",
+        deptReviewer: "王主管", deptReviewAt: "2026-11-12", rejectRemark: "用途说明不清晰，请补充后重新申请",
+        creator: "张三", createdAt: "2026-11-10 09:12:00", maintainer: "李四", updatedAt: "2026-11-12 14:20:33"
       }
-      return `<div><span class="label">申请进度：</span><span class="tag ${r.progressClass}">${text}</span></div>`;
-    }
+    ];
 
-    function render() {
-      document.getElementById("tbody").innerHTML = rows.map((r, i) => `
-        <tr>
-          <td class="check"><input type="checkbox" class="row-check" data-name="${r.tmName}-${r.niceClass}" /></td>
-          <td class="kv">
-            ${kv("公司名称", r.company)}
-            ${kv("申请人", r.applicant)}
-            ${kv("注册商", r.registrar)}
-            ${kv("权利人类型", r.rightType)}
-          </td>
-          <td class="kv">
-            ${kv("商标类型", r.tmType)}
-            ${kv("商标名称", r.tmName)}
-            ${kv("国别/地区", r.region)}
-            ${kv("品牌编码", r.brandCode)}
-          </td>
-          <td class="kv">
-            ${kv("使用人1", r.user1)}
-            ${kv("备案平台1", r.filingPlatform1)}
-            ${kv("备案账号1", r.filingAccount1)}
-            ${kv("授权账号1", r.authAccount1)}
-            ${kv("使用人2", r.user2)}
-            ${kv("备案平台2", r.filingPlatform2)}
-            ${kv("备案账号2", r.filingAccount2)}
-            ${kv("授权账号2", r.authAccount2)}
-          </td>
-          <td class="kv">
-            ${kv("商标类别", r.niceClass)}
-          </td>
-          <td class="kv">
-            ${kv("申请日期", r.applyDate)}
-            ${kv("注册日期", r.regDate)}
-            ${kv("宣誓日期", r.oathDate)}
-            ${kv("下证日期", r.certDate)}
-            ${kv("到期日期", r.expireDate)}
-            ${kv("预警日", r.warnDate)}
-          </td>
-          <td class="kv">
-            ${kv("申请号", r.applyNo)}
-            ${kv("注册号", r.regNo)}
-            ${progressCell(r)}
-          </td>
-          <td class="kv">
-            ${kv("受理回执", r.receipt, true)}
-            ${kv("证书", r.cert, true)}
-          </td>
-          <td class="kv">
-            ${kv("续展状态", r.renew)}
-            ${kv("宣誓状态", r.oath)}
-            ${kv("续展代理", r.renewAgent)}
-            ${kv("宣誓代理", r.oathAgent)}
-          </td>
-          <td class="kv">
-            ${kv("查询通过率", r.passRate)}
-            ${kv("备用邮箱", r.email)}
-            ${kv("备注", r.remark)}
-          </td>
-          <td class="kv">
-            ${kv("创建人", r.creator)}
-            ${kv("创建时间", r.createTime)}
-            ${kv("更新人", r.updater)}
-            ${kv("更新时间", r.updateTime)}
-          </td>
-        </tr>
-      `).join("");
-      document.getElementById("pager").textContent =
-        `共 ${rows.length} 条 · 每页 10 条 · 1 / 1（多类已拆行）`;
-    }
+    let role = "applicant";
+    let records = [];
+    let editingId = null;
+    let drawerMode = "edit";
+    let currentApp = "brand"; // brand | domain | email
+    let currentMenu = "register"; // register | manage
+    let selectedIds = new Set();
+    let query = {
+      applyStatus: "", department: "", status: "", type: "", platform: "", risk: "", stale: "",
+      field: "email", q: "",
+      dateField: "openDate", dateFrom: "", dateTo: ""
+    };
 
-    function selectedNames() {
-      return [...document.querySelectorAll(".row-check:checked")].map((el) => el.dataset.name);
-    }
+    const APP_TITLES = {
+      "brand-register": "品牌注册",
+      "brand-manage": "品牌管理",
+      "domain-register": "域名注册",
+      "domain-manage": "域名管理",
+      "email-register": "邮箱注册",
+      "email-manage": "邮箱管理"
+    };
 
-    function requireSelect(action) {
-      const names = selectedNames();
-      if (!names.length) {
-        toast(`请先勾选要${action}的记录`);
-        return;
+    function menuRecords() {
+      if (currentMenu === "register") {
+        return records.filter(r => r.applyStatus === "待部门审核" || r.applyStatus === "已驳回");
       }
-      toast(`${action}：${names.join("、")}`);
+      // 邮箱管理：部门审核通过后的数据
+      return records.filter(r => r.applyStatus === "已开通");
     }
 
-    function toggleAll(checked) {
-      document.querySelectorAll(".row-check").forEach((el) => { el.checked = checked; });
+    function postDomainMenu(menu) {
+      const frame = $("#domainFrame");
+      if (!frame || !frame.contentWindow) return;
+      frame.contentWindow.postMessage({ type: "switchDomainMenu", menu }, "*");
     }
 
-    let uploadKind = "";
-
-    function toast(msg) {
-      const el = document.getElementById("toast");
-      el.textContent = msg;
-      el.style.display = "block";
-      clearTimeout(window.__t);
-      window.__t = setTimeout(() => (el.style.display = "none"), 1600);
-    }
-
-    function openUpload(kind) {
-      const names = selectedNames();
-      uploadKind = kind;
-      document.getElementById("modalTitle").textContent = "上传" + kind;
-      document.getElementById("modalDesc").textContent = names.length
-        ? `为「${names.join("、")}」上传${kind}（原型演示）。`
-        : `请勾选记录后上传${kind}；也可先选文件体验上传流程。`;
-      document.getElementById("fileInput").value = "";
-      document.getElementById("modal").style.display = "flex";
-    }
-
-    function closeModal() {
-      document.getElementById("modal").style.display = "none";
-    }
-
-    function confirmUpload() {
-      const f = document.getElementById("fileInput").files[0];
-      closeModal();
-      toast(f ? `已上传${uploadKind}：${f.name}` : `已模拟上传${uploadKind}`);
-    }
-
-    let formMode = "add";
-    let selectedNiceClasses = [];
-
-    function setSelectValue(id, value) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (value == null || value === "") {
-        el.value = "";
-        return;
-      }
-      const hit = [...el.options].find((o) => o.value === value || o.text === value);
-      if (hit) el.value = hit.value;
-      else {
-        const opt = document.createElement("option");
-        opt.value = value;
-        opt.textContent = value;
-        el.appendChild(opt);
-        el.value = value;
-      }
-    }
-
-    function toNiceClassLabel(v) {
-      const raw = String(v || "").trim();
-      if (!raw) return "";
-      if (/^第\d+类$/.test(raw)) return raw;
-      const n = raw.replace(/^第/, "").replace(/类$/, "").trim();
-      return n ? `第${n}类` : "";
-    }
-
-    function initNiceClassMultiSelect() {
-      const panel = document.getElementById("niceClassPanel");
-      const trigger = document.getElementById("niceClassTrigger");
-      const wrap = document.getElementById("niceClassMs");
-      panel.innerHTML = Array.from({ length: 45 }, (_, i) => {
-        const label = `第${i + 1}类`;
-        return `<label class="ms-item"><input type="checkbox" value="${label}" />${label}</label>`;
-      }).join("");
-
-      trigger.addEventListener("click", (e) => {
-        e.stopPropagation();
-        wrap.classList.toggle("open");
-      });
-      panel.addEventListener("click", (e) => e.stopPropagation());
-      panel.querySelectorAll("input[type=checkbox]").forEach((cb) => {
-        cb.addEventListener("change", () => {
-          selectedNiceClasses = [...panel.querySelectorAll("input:checked")].map((el) => el.value);
-          renderNiceClassTrigger();
-        });
-      });
-      document.addEventListener("click", () => wrap.classList.remove("open"));
-      renderNiceClassTrigger();
-    }
-
-    function renderNiceClassTrigger() {
-      const trigger = document.getElementById("niceClassTrigger");
-      if (!selectedNiceClasses.length) {
-        trigger.innerHTML = `<span class="ms-placeholder">请选择商标类别（可多选）</span>`;
-        return;
-      }
-      trigger.innerHTML = selectedNiceClasses.map((label) =>
-        `<span class="ms-tag">${label}<button type="button" data-n="${label}" title="移除">×</button></span>`
-      ).join("");
-      trigger.querySelectorAll("button").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const n = btn.dataset.n;
-          selectedNiceClasses = selectedNiceClasses.filter((x) => x !== n);
-          const cb = document.querySelector(`#niceClassPanel input[value="${n}"]`);
-          if (cb) cb.checked = false;
-          renderNiceClassTrigger();
-        });
+    function setShellActive(id) {
+      ["brandRegisterShell", "brandManageShell", "domainShell", "emailShell"].forEach(shellId => {
+        const el = $("#" + shellId);
+        if (el) el.classList.toggle("active", shellId === id);
       });
     }
 
-    function setNiceClasses(values) {
-      const list = (Array.isArray(values) ? values : String(values || "").split(/[,，\s]+/))
-        .map(toNiceClassLabel)
-        .filter(Boolean);
-      selectedNiceClasses = [...new Set(list)];
-      document.querySelectorAll("#niceClassPanel input[type=checkbox]").forEach((cb) => {
-        cb.checked = selectedNiceClasses.includes(cb.value);
+    function switchApp(app, menu) {
+      if (app === "brand" || app === "domain" || app === "email") currentApp = app;
+      else currentApp = "brand";
+      currentMenu = menu === "manage" ? "manage" : "register";
+      const key = `${currentApp}-${currentMenu}`;
+
+      $$("#menuTabs .menu-tab").forEach(btn => {
+        btn.classList.toggle(
+          "active",
+          btn.dataset.app === currentApp && btn.dataset.menu === currentMenu
+        );
       });
-      renderNiceClassTrigger();
-    }
+      $("#pageTitle").textContent = APP_TITLES[key] || "";
 
-    function fillForm(row) {
-      document.getElementById("fBrandCode").value = row.brandCode || "";
-      document.getElementById("fCompany").value = row.company || "";
-      document.getElementById("fApplicantForm").value = row.applicant || "";
-      document.getElementById("fRegistrar").value = row.registrar || "";
-      setSelectValue("fRightType", row.rightType);
-      setSelectValue("fTmType", row.tmType);
-      document.getElementById("fTmName").value = row.tmName || "";
-      setSelectValue("fRegion", row.region);
-      document.getElementById("fUser1").value = row.user1 || "";
-      setSelectValue("fFilingPlatform1", row.filingPlatform1);
-      document.getElementById("fFilingAccount1").value = row.filingAccount1 || "";
-      document.getElementById("fAuthAccount1").value = row.authAccount1 || "";
-      document.getElementById("fUser2").value = row.user2 || "";
-      setSelectValue("fFilingPlatform2", row.filingPlatform2);
-      document.getElementById("fFilingAccount2").value = row.filingAccount2 || "";
-      document.getElementById("fAuthAccount2").value = row.authAccount2 || "";
-      setNiceClasses(row.niceClass || []);
-      document.getElementById("fApplyDate").value = row.applyDate || "";
-      document.getElementById("fRegDate").value = row.regDate || "";
-      document.getElementById("fOathDate").value = row.oathDate || "";
-      document.getElementById("fCertDate").value = row.certDate || "";
-      document.getElementById("fExpireDate").value = row.expireDate || "";
-      document.getElementById("fWarnDate").value = row.warnDate || "";
-      document.getElementById("fApplyNo").value = row.applyNo || "";
-      document.getElementById("fRegNo").value = row.regNo || "";
-      setSelectValue("fProgressForm", row.progress);
-      setSelectValue("fRenewForm", row.renew);
-      setSelectValue("fOathForm", row.oath);
-      document.getElementById("fRenewAgent").value = row.renewAgent || "";
-      document.getElementById("fOathAgent").value = row.oathAgent || "";
-      document.getElementById("fPassRate").value = String(row.passRate || "").replace(/%/g, "");
-      document.getElementById("fEmail").value = row.email || "";
-      document.getElementById("fRemark").value = row.remark || "";
-    }
-
-    function openAddForm() {
-      formMode = "add";
-      document.getElementById("formTitle").textContent = "添加";
-      // 添加时不展示品牌编码（注册成功后由系统生成）
-      document.getElementById("fieldBrandCode").classList.add("hidden");
-      document.getElementById("fBrandCode").value = "";
-      setSelectValue("fRightType", "");
-      setSelectValue("fFilingPlatform1", "");
-      setSelectValue("fFilingPlatform2", "");
-      setSelectValue("fProgressForm", "");
-      setSelectValue("fRenewForm", "");
-      setSelectValue("fOathForm", "");
-      setNiceClasses([]);
-      document.getElementById("addModal").style.display = "flex";
-    }
-
-    function openEditForm() {
-      const names = selectedNames();
-      if (!names.length) {
-        toast("请先勾选要编辑的记录");
-        return;
-      }
-      formMode = "edit";
-      document.getElementById("formTitle").textContent = "编辑";
-      document.getElementById("fieldBrandCode").classList.remove("hidden");
-      const first = names[0];
-      const row = rows.find((r) => `${r.tmName}-${r.niceClass}` === first) || rows[0];
-      fillForm(row);
-      document.getElementById("addModal").style.display = "flex";
-    }
-
-    function closeAddForm() {
-      document.getElementById("addModal").style.display = "none";
-    }
-
-    function confirmAdd() {
-      if (!selectedNiceClasses.length) {
-        toast("请选择商标类别（必填，可多选）");
-        return;
-      }
-      closeAddForm();
-      toast(formMode === "add"
-        ? `已添加（类别：${selectedNiceClasses.join("、")}，多类将拆行）`
-        : "已保存编辑");
-    }
-
-    document.getElementById("modal").addEventListener("click", (e) => {
-      if (e.target.id === "modal") closeModal();
-    });
-    document.getElementById("addModal").addEventListener("click", (e) => {
-      if (e.target.id === "addModal") closeAddForm();
-    });
-
-    function syncDateRangeText() {
-      const start = document.getElementById("fStart").value;
-      const end = document.getElementById("fEnd").value;
-      const box = document.getElementById("dateRangeBox");
-      const text = document.getElementById("dateRangeText");
-      if (!start && !end) {
-        text.textContent = "开始日期 - 结束日期";
-        box.classList.remove("has-value");
+      if (currentApp === "brand") {
+        setShellActive(currentMenu === "manage" ? "brandManageShell" : "brandRegisterShell");
+      } else if (currentApp === "domain") {
+        setShellActive("domainShell");
+        postDomainMenu(currentMenu);
       } else {
-        text.textContent = `${start || "开始日期"} - ${end || "结束日期"}`;
-        box.classList.add("has-value");
+        setShellActive("emailShell");
+        switchEmailMenu(currentMenu);
       }
     }
 
-    document.getElementById("fStart").addEventListener("change", syncDateRangeText);
-    document.getElementById("fEnd").addEventListener("change", syncDateRangeText);
-
-    function doSearch() {
-      const timeType = document.getElementById("fTimeType").selectedOptions[0].text;
-      const parts = [
-        document.getElementById("fPlatform").value && `备案平台=${document.getElementById("fPlatform").value}`,
-        document.getElementById("fProgress").value && `申请进度=${document.getElementById("fProgress").value}`,
-        document.getElementById("fApplicant").value && `申请人=${document.getElementById("fApplicant").value}`,
-        (document.getElementById("fStart").value || document.getElementById("fEnd").value) &&
-          `${timeType}=${document.getElementById("fStart").value || "开始"}~${document.getElementById("fEnd").value || "结束"}`,
-        document.getElementById("q").value && `${document.getElementById("qField").selectedOptions[0].text}=${document.getElementById("q").value}`,
-        document.getElementById("fRenew").value && `续展状态=${document.getElementById("fRenew").value}`,
-        document.getElementById("fOath").value && `宣誓状态=${document.getElementById("fOath").value}`,
-      ].filter(Boolean);
-      toast(parts.length ? `搜索：${parts.join("；")}` : "搜索：全部");
+    function fillDeptFilter() {
+      const sel = $("#filterDept");
+      if (!sel) return;
+      const prev = sel.value;
+      const depts = [...new Set(menuRecords().map(r => r.department).filter(Boolean))].sort();
+      sel.innerHTML = `<option value="">所属部门</option>` +
+        depts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join("");
+      if (prev && depts.includes(prev)) sel.value = prev;
     }
 
-    function doClear() {
-      ["fPlatform", "fProgress", "fApplicant", "fRenew", "fOath", "fStart", "fEnd", "q"].forEach((id) => {
-        document.getElementById(id).value = "";
+    function switchEmailMenu(menu) {
+      currentMenu = menu === "manage" ? "manage" : "register";
+      selectedIds.clear();
+      $("#toolbarRegister").style.display = currentMenu === "register" ? "flex" : "none";
+      $("#toolbarManage").style.display = currentMenu === "manage" ? "flex" : "none";
+      $$("#emailShell .register-only").forEach(el => {
+        el.style.display = currentMenu === "register" ? "" : "none";
       });
-      document.getElementById("qField").value = "tmName";
-      document.getElementById("fTimeType").value = "apply";
-      syncDateRangeText();
-      toast("已清空搜索条件");
+      $$("#emailShell .manage-only").forEach(el => {
+        el.style.display = currentMenu === "manage" ? "" : "none";
+      });
+      if (currentMenu === "manage") {
+        $("#filterApplyStatus").value = "";
+        if (["openDate", "closeDate"].includes($("#dateField").value)) {
+          $("#dateField").value = "updatedAt";
+        }
+      } else {
+        $("#filterStatus").value = "";
+        $("#filterPlatform").value = "";
+        $("#filterRisk").value = "";
+        $("#filterStale").value = "";
+        if (["openDate", "closeDate"].includes($("#dateField").value)) {
+          $("#dateField").value = "createdAt";
+        }
+        if (["store", "storeId", "provider"].includes($("#searchField").value)) {
+          $("#searchField").value = "email";
+        }
+      }
+      clearQuery();
     }
 
-    initNiceClassMultiSelect();
-    render();
+    function switchMenu(menu) {
+      // 兼容旧调用：仅在邮箱应用内切换
+      if (currentApp === "email") switchEmailMenu(menu);
+      else switchApp("email", menu);
+    }
+
+    function yyyymmdd(date = new Date()) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}${m}${d}`;
+    }
+
+    /** 邮箱ID：YX + YYYYMMDD + 2位流水 */
+    function generateEmailId() {
+      const prefix = `YX${yyyymmdd()}`;
+      let maxSeq = 0;
+      records.forEach(r => {
+        if (!r.emailId || !r.emailId.startsWith(prefix)) return;
+        const seq = parseInt(r.emailId.slice(prefix.length), 10);
+        if (!Number.isNaN(seq) && seq > maxSeq) maxSeq = seq;
+      });
+      return `${prefix}${String(maxSeq + 1).padStart(2, "0")}`;
+    }
+
+    const $ = (sel, root = document) => root.querySelector(sel);
+    const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+    function daysSince(dateStr) {
+      if (!dateStr) return Infinity;
+      const d = new Date(String(dateStr).replace(" ", "T"));
+      if (Number.isNaN(d.getTime())) return Infinity;
+      const now = new Date();
+      now.setHours(0,0,0,0);
+      const day = new Date(d);
+      day.setHours(0,0,0,0);
+      return Math.floor((now - day) / 86400000);
+    }
+    function isStale(rec) { return daysSince(rec.updatedAt) > 90; }
+    function pad2(n) { return String(n).padStart(2, "0"); }
+    /** 存储/展示：YYYY-MM-DD HH:mm:ss */
+    function nowDateTime() {
+      const d = new Date();
+      return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+    }
+    function toDatetimeLocal(v) {
+      if (!v) return "";
+      return String(v).replace(" ", "T").slice(0, 19);
+    }
+    function fromDatetimeLocal(v) {
+      if (!v) return "";
+      const s = String(v).replace("T", " ");
+      return s.length === 16 ? `${s}:00` : s.slice(0, 19);
+    }
+    function datePart(v) {
+      return String(v || "").slice(0, 10);
+    }
+
+    function toast(msg, type = "ok") {
+      const el = document.createElement("div");
+      el.className = `toast ${type}`;
+      el.textContent = msg;
+      $("#toasts").appendChild(el);
+      setTimeout(() => el.remove(), 2400);
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function dash(v) { return v ? escapeHtml(v) : ""; }
+
+    function load() {
+      try {
+        const raw = localStorage.getItem("email_mgmt_proto_v8")
+          || localStorage.getItem("email_mgmt_proto_v7")
+          || localStorage.getItem("email_mgmt_proto_v6");
+        if (raw) {
+          const data = JSON.parse(raw);
+          records = data.records || structuredClone(SEED);
+        } else {
+          records = structuredClone(SEED);
+        }
+        // 原「待开通」并入邮箱管理；补齐驳回备注
+        records.forEach(r => {
+          if (r.applyStatus === "待开通") r.applyStatus = "已开通";
+          if (r.rejectRemark == null) r.rejectRemark = "";
+        });
+      } catch {
+        records = structuredClone(SEED);
+      }
+    }
+    function saveStore() {
+      localStorage.setItem("email_mgmt_proto_v8", JSON.stringify({ records }));
+    }
+
+    function setRole(next) {
+      role = next;
+      applyRolePermissions();
+      updateToolbar();
+      if ($("#overlay").classList.contains("open")) updateRoleAlert();
+    }
+
+    function syncDomainFields() {
+      const form = $("#emailForm");
+      const domain = form.elements.domain.value;
+      const info = DOMAIN_MAP[domain];
+      if (info) {
+        form.elements.owner.value = info.owner;
+        form.elements.department.value = info.department;
+      } else if (drawerMode === "apply") {
+        form.elements.owner.value = "";
+        form.elements.department.value = "";
+      }
+    }
+
+    function applyRolePermissions() {
+      const form = $("#emailForm");
+      const isApplyLike = drawerMode === "apply" || drawerMode === "edit";
+      $$("[data-source]", form).forEach(field => {
+        const source = field.dataset.source;
+        $$("input, select, textarea", field).forEach(ctrl => {
+          // 使用人1 / 所属部门 / 系统字段：只读
+          if (["emailId","department","owner","creator","createdAt","maintainer","updatedAt"].includes(ctrl.name)) {
+            ctrl.disabled = true;
+            return;
+          }
+          if (isApplyLike) {
+            // 申请注册 / 编辑：仅可编辑申请人字段（与申请注册一致）
+            ctrl.disabled = source !== "applicant";
+            return;
+          }
+          if (source === "applicant") ctrl.disabled = false;
+          else if (source === "admin") ctrl.disabled = role !== "admin";
+          else if (source === "system") ctrl.disabled = true;
+        });
+      });
+      togglePlatformFields();
+    }
+
+    function updateRoleAlert() {
+      const el = $("#roleAlert");
+      el.classList.add("show");
+      if (drawerMode === "apply") {
+        el.textContent = "申请注册：填写资产标识、域名与平台绑定；使用人1 / 所属部门由域名自动带出。";
+      } else if (drawerMode === "edit") {
+        el.textContent = "编辑：字段与申请注册一致，回显当前数据；使用人1 / 所属部门由域名带出，只读。";
+      } else if (drawerMode === "confirm") {
+        el.textContent = "确认开通：完善服务商与费用等信息。";
+      } else if (drawerMode === "maintain") {
+        el.textContent = "编辑：完善服务商与费用、状态与风险等信息（数据维护）。";
+      } else {
+        el.textContent = "编辑邮箱台账信息。";
+      }
+    }
+
+    function togglePlatformFields() {
+      const yes = $("#forPlatform").value === "是";
+      const canEditPlatform = drawerMode === "apply" || drawerMode === "edit" || drawerMode === "confirm" || drawerMode === "maintain";
+      $$(".platform-dep").forEach(field => {
+        field.style.opacity = yes ? "1" : "0.5";
+        $$("input, select", field).forEach(ctrl => {
+          ctrl.disabled = !canEditPlatform || !yes;
+        });
+      });
+    }
+
+    function setFormSections(mode) {
+      const isApplyLike = mode === "apply" || mode === "edit";
+      const showConfirmLike = mode === "confirm" || mode === "maintain";
+      $("#sectionAsset").style.display = "";
+      $("#sectionBrand").style.display = "";
+      $("#sectionPlatform").style.display = "";
+      // 编辑 / 申请注册：仅三块内容；确认开通 / 数据维护展示服务商等
+      $("#sectionProvider").style.display = showConfirmLike ? "" : "none";
+      $("#sectionStatus").style.display = showConfirmLike ? "" : "none";
+      // 确认开通 / 数据维护不展示审核信息、系统信息
+      $("#sectionAudit").style.display = "none";
+      $("#sectionMaintain").style.display = "none";
+      // 申请注册不展示邮箱ID；编辑回显时展示
+      $("#fieldEmailId").style.display = mode === "edit" ? "" : "none";
+      $$("#sectionStatus .field").forEach(field => {
+        field.style.display = "";
+      });
+      if (isApplyLike) {
+        $("#sectionProvider").style.display = "none";
+        $("#sectionStatus").style.display = "none";
+        $("#sectionAudit").style.display = "none";
+        $("#sectionMaintain").style.display = "none";
+      }
+    }
+
+    function statusTag(status) {
+      if (status === "正常") return `<span class="tag tag-green">账号状态：正常</span>`;
+      if (status === "停用") return `<span class="tag tag-gray">账号状态：停用</span>`;
+      if (status === "已删除") return `<span class="tag tag-red">账号状态：已删除</span>`;
+      return `<span class="tag tag-gray">账号状态：未设置</span>`;
+    }
+
+    function applyStatusTag(applyStatus) {
+      if (applyStatus === "已开通") return `<span class="tag tag-green">申请状态：已开通</span>`;
+      if (applyStatus === "待开通") return `<span class="tag tag-orange">申请状态：待开通</span>`;
+      if (applyStatus === "待部门审核") return `<span class="tag tag-blue">申请状态：待部门审核</span>`;
+      if (applyStatus === "已驳回") return `<span class="tag tag-red">申请状态：已驳回</span>`;
+      return `<span class="tag tag-gray">申请状态：未设置</span>`;
+    }
+
+    function riskTag(risk) {
+      if (risk === "高") return `<span class="tag tag-red">风险：高</span>`;
+      if (risk === "中") return `<span class="tag tag-orange">风险：中</span>`;
+      if (risk === "低") return `<span class="tag tag-green">风险：低</span>`;
+      return `<span class="tag tag-gray">风险：未评</span>`;
+    }
+
+    function filteredRecords() {
+      return menuRecords().filter(r => {
+        if (currentMenu === "register" && query.applyStatus && r.applyStatus !== query.applyStatus) return false;
+        if (query.department && r.department !== query.department) return false;
+        if (query.status && r.status !== query.status) return false;
+        if (query.type && r.emailType !== query.type) return false;
+        if (query.platform && r.forPlatform !== query.platform) return false;
+        if (query.risk && r.risk !== query.risk) return false;
+        if (query.stale === "stale" && !isStale(r)) return false;
+        if (query.stale === "fresh" && isStale(r)) return false;
+        if (query.q) {
+          const fieldMap = {
+            email: r.email,
+            emailId: r.emailId,
+            domain: r.domain,
+            store: r.store,
+            storeId: r.storeId,
+            provider: r.provider
+          };
+          const val = String(fieldMap[query.field] ?? "").toLowerCase();
+          if (!val.includes(query.q)) return false;
+        }
+        if (query.dateFrom || query.dateTo) {
+          const dateVal = datePart(r[query.dateField]);
+          if (!dateVal) return false;
+          if (query.dateFrom && dateVal < query.dateFrom) return false;
+          if (query.dateTo && dateVal > query.dateTo) return false;
+        }
+        return true;
+      });
+    }
+
+    function line(k, v, opt = {}) {
+      let val = dash(v);
+      if (opt.link) val = `<span class="v-link" data-action="${opt.link}" data-id="${opt.id || ""}">${dash(v)}</span>`;
+      if (opt.warn) val = `<span class="v-warn">${dash(v)}</span>`;
+      if (opt.danger) val = `<span class="v-danger">${dash(v)}</span>`;
+      return `<div class="line"><span class="k">${k}：</span><span class="v">${val}</span></div>`;
+    }
+
+    function syncListHeader() {
+      const head = $("#listHeadRow");
+      const cols = $("#listColgroup");
+      if (currentMenu === "register") {
+        cols.innerHTML = `
+          <col class="c-check" />
+          <col style="width:15%" />
+          <col style="width:15%" />
+          <col style="width:15%" />
+          <col style="width:12%" />
+          <col style="width:16%" />
+          <col style="width:15%" />
+          <col class="c-ops" />`;
+        head.innerHTML = `
+          <th class="check"><input type="checkbox" id="checkAll" /></th>
+          <th>资产标识</th>
+          <th>品牌与域名</th>
+          <th>平台绑定</th>
+          <th>申请状态</th>
+          <th>审核信息</th>
+          <th>系统信息</th>
+          <th>操作</th>`;
+      } else {
+        cols.innerHTML = `
+          <col class="c-check" />
+          <col style="width:14%" />
+          <col style="width:13%" />
+          <col style="width:14%" />
+          <col style="width:13%" />
+          <col style="width:12%" />
+          <col style="width:12%" />
+          <col style="width:12%" />
+          <col class="c-ops" />`;
+        head.innerHTML = `
+          <th class="check"><input type="checkbox" id="checkAll" /></th>
+          <th>资产标识</th>
+          <th>品牌与域名</th>
+          <th>服务商与费用</th>
+          <th>平台绑定</th>
+          <th>状态与风险</th>
+          <th>审核信息</th>
+          <th>系统信息</th>
+          <th>操作</th>`;
+      }
+    }
+
+    function cellAsset(r) {
+      return `<div class="cell-lines">
+        ${line("邮箱地址", r.email, { link: "open", id: r.id })}
+        ${line("邮箱ID", r.emailId)}
+        ${line("邮箱类型", r.emailType)}
+      </div>`;
+    }
+
+    function cellBrand(r) {
+      return `<div class="cell-lines">
+        ${line("所属域名", r.domain)}
+        ${line("使用人1", r.owner)}
+        ${line("所属部门", r.department)}
+      </div>`;
+    }
+
+    function cellProvider(r) {
+      return `<div class="cell-lines">
+        ${line("服务商", r.provider)}
+        ${line("开通日期", r.openDate)}
+        ${line("停用日期", r.closeDate)}
+        ${line("收费方式", r.billing)}
+      </div>`;
+    }
+
+    function cellPlatform(r) {
+      return `<div class="cell-lines">
+        ${line("平台注册", r.forPlatform || "否")}
+        ${line("绑定平台", r.platform)}
+        ${line("绑定站点", r.site)}
+        ${line("绑定店铺", r.store)}
+        ${line("店铺ID", r.storeId)}
+      </div>`;
+    }
+
+    function cellAudit(r) {
+      return `<div class="cell-lines">
+        ${line("部门审核人", r.deptReviewer)}
+        ${line("部门审核时间", r.deptReviewAt)}
+        ${line("驳回备注", r.rejectRemark)}
+      </div>`;
+    }
+
+    function cellSystem(r, stale) {
+      return `<div class="cell-lines">
+        ${line("创建人", r.creator)}
+        ${line("创建时间", r.createdAt)}
+        ${line("更新人", r.maintainer)}
+        ${line("更新时间", r.updatedAt, { warn: stale })}
+        ${stale ? `<div class="line"><span class="tag tag-orange">超 90 天未更新</span></div>` : ""}
+      </div>`;
+    }
+
+    function renderRegisterRow(r) {
+      const checked = selectedIds.has(r.id) ? "checked" : "";
+      const selected = selectedIds.has(r.id) ? "selected" : "";
+      const stale = isStale(r);
+      return `<tr class="${selected}" data-id="${r.id}">
+        <td class="check"><input type="checkbox" class="row-check" data-id="${r.id}" ${checked} /></td>
+        <td>${cellAsset(r)}</td>
+        <td>${cellBrand(r)}</td>
+        <td>${cellPlatform(r)}</td>
+        <td><div class="cell-lines"><div class="line">${applyStatusTag(r.applyStatus)}</div></div></td>
+        <td>${cellAudit(r)}</td>
+        <td>${cellSystem(r, stale)}</td>
+        <td class="ops"><button type="button" class="action-link" data-action="edit" data-id="${r.id}">编辑</button></td>
+      </tr>`;
+    }
+
+    function renderManageRow(r) {
+      const stale = isStale(r);
+      const checked = selectedIds.has(r.id) ? "checked" : "";
+      const selected = selectedIds.has(r.id) ? "selected" : "";
+      const staleCls = stale ? "stale" : "";
+      const status = `<div class="cell-lines">
+        <div class="line">${statusTag(r.status)}</div>
+        <div class="line" style="margin-top:4px">${riskTag(r.risk)}</div>
+        ${line("备注", r.remark)}
+      </div>`;
+      return `<tr class="${selected} ${staleCls}" data-id="${r.id}">
+        <td class="check"><input type="checkbox" class="row-check" data-id="${r.id}" ${checked} /></td>
+        <td>${cellAsset(r)}</td>
+        <td>${cellBrand(r)}</td>
+        <td>${cellProvider(r)}</td>
+        <td>${cellPlatform(r)}</td>
+        <td>${status}</td>
+        <td>${cellAudit(r)}</td>
+        <td>${cellSystem(r, stale)}</td>
+        <td class="ops"><button type="button" class="action-link" data-action="edit" data-id="${r.id}">编辑</button></td>
+      </tr>`;
+    }
+
+    function renderTable() {
+      syncListHeader();
+      fillDeptFilter();
+      const list = filteredRecords();
+      const body = $("#tableBody");
+      $("#emptyState").style.display = list.length ? "none" : "block";
+      body.innerHTML = list.map(r =>
+        currentMenu === "register" ? renderRegisterRow(r) : renderManageRow(r)
+      ).join("");
+
+      const scope = menuRecords();
+      $("#statTotal").textContent = list.length;
+      $("#statNormal").textContent = scope.filter(r => r.status === "正常").length;
+      $("#statPlatform").textContent = scope.filter(r => r.forPlatform === "是").length;
+      $("#statStale").textContent = scope.filter(isStale).length;
+      $("#statHigh").textContent = scope.filter(r => r.risk === "高").length;
+      const pagerText = $("#pagerText");
+      if (pagerText) pagerText.textContent = `每页 10 条 · 1 / 1`;
+
+      const visibleIds = list.map(r => r.id);
+      const checkAll = $("#checkAll");
+      if (checkAll) checkAll.checked = visibleIds.length > 0 && visibleIds.every(id => selectedIds.has(id));
+      updateToolbar();
+    }
+
+    function updateToolbar() {
+      // 编辑 / 删除不置灰，点击时再校验选中状态
+    }
+
+    function applyQuery() {
+      query = {
+        applyStatus: $("#filterApplyStatus").value,
+        department: $("#filterDept").value,
+        status: $("#filterStatus").value,
+        type: $("#filterType").value,
+        platform: $("#filterPlatform").value,
+        risk: $("#filterRisk").value,
+        stale: $("#filterStale").value,
+        field: $("#searchField").value || "email",
+        q: $("#searchInput").value.trim().toLowerCase(),
+        dateField: $("#dateField").value || "openDate",
+        dateFrom: $("#dateFrom").value || "",
+        dateTo: $("#dateTo").value || ""
+      };
+      renderTable();
+    }
+
+    function syncDateRangeUI(forceActive = false) {
+      const box = $("#dateRangeBox");
+      const has = Boolean($("#dateFrom").value || $("#dateTo").value);
+      box.classList.toggle("is-active", forceActive || has);
+    }
+
+    function clearQuery() {
+      $("#filterApplyStatus").value = "";
+      $("#filterDept").value = "";
+      $("#filterStatus").value = "";
+      $("#filterType").value = "";
+      $("#filterPlatform").value = "";
+      $("#filterRisk").value = "";
+      $("#filterStale").value = "";
+      $("#searchField").value = "email";
+      $("#searchInput").value = "";
+      $("#dateField").value = currentMenu === "manage" ? "openDate" : "createdAt";
+      $("#dateFrom").value = "";
+      $("#dateTo").value = "";
+      syncDateRangeUI(false);
+      applyQuery();
+    }
+
+    /** mode: edit | apply | confirm | maintain */
+    function openDrawer(id = null, mode = "edit") {
+      editingId = id;
+      drawerMode = mode;
+      const form = $("#emailForm");
+      form.reset();
+      $$(".field.error").forEach(f => f.classList.remove("error"));
+      $("#formError").classList.remove("show");
+      setFormSections(mode);
+
+      if (id) {
+        const rec = records.find(r => r.id === id);
+        if (!rec) return;
+        const titles = { confirm: "确认开通", maintain: "编辑", edit: "编辑" };
+        $("#drawerTitle").textContent = titles[mode] || "编辑";
+        $("#drawerSubtitle").textContent = mode === "edit"
+          ? "与申请注册字段一致，回显当前数据"
+          : `${rec.emailId || ""} · ${rec.email}`;
+        Object.entries(rec).forEach(([k, v]) => {
+          const el = form.elements[k];
+          if (!el) return;
+          if (["createdAt", "updatedAt", "confirmOpenAt"].includes(k)) {
+            el.value = toDatetimeLocal(v);
+          } else {
+            el.value = v ?? "";
+          }
+        });
+        // 编辑：按域名回显使用人1 / 所属部门（只读关联）
+        if (mode === "edit") {
+          const info = DOMAIN_MAP[rec.domain];
+          if (info) {
+            form.elements.owner.value = info.owner;
+            form.elements.department.value = info.department;
+          }
+        }
+        if (mode === "confirm") {
+          if (form.elements.applyStatus.value === "待部门审核" || !form.elements.applyStatus.value) {
+            form.elements.applyStatus.value = "待开通";
+          }
+        }
+        $("#staleAlert").classList.toggle("show", mode !== "edit" && isStale(rec));
+      } else {
+        // 申请注册：新建申请
+        $("#drawerTitle").textContent = "申请注册";
+        $("#drawerSubtitle").textContent = "选择域名后自动带出使用人1、所属部门";
+        $("#staleAlert").classList.remove("show");
+        const now = nowDateTime();
+        form.elements.owner.value = "";
+        form.elements.department.value = "";
+        form.elements.creator.value = USERS.applicant.name;
+        form.elements.createdAt.value = toDatetimeLocal(now);
+        form.elements.maintainer.value = USERS.applicant.name;
+        form.elements.updatedAt.value = toDatetimeLocal(now);
+        form.elements.applyStatus.value = "待部门审核";
+      }
+
+      updateRoleAlert();
+      applyRolePermissions();
+      $("#overlay").classList.add("open");
+    }
+
+    function today() {
+      const d = new Date();
+      return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    }
+
+    function closeDrawer() {
+      $("#overlay").classList.remove("open");
+      editingId = null;
+    }
+
+    function getFormData() {
+      const form = $("#emailForm");
+      const data = {};
+      ["email","emailId","emailType","domain","owner","department","provider","openDate","closeDate","status","billing","confirmOpenAt","forPlatform","platform","site","store","storeId","applyStatus","risk","remark","deptReviewer","deptReviewAt","rejectRemark","creator","createdAt","maintainer","updatedAt"]
+        .forEach(k => { data[k] = form.elements[k]?.value?.trim() ?? ""; });
+      data.confirmOpenAt = fromDatetimeLocal(data.confirmOpenAt);
+      data.createdAt = fromDatetimeLocal(data.createdAt);
+      data.updatedAt = fromDatetimeLocal(data.updatedAt);
+      return data;
+    }
+
+    function clearErrors() {
+      $$(".field.error").forEach(f => f.classList.remove("error"));
+      $("#formError").classList.remove("show");
+    }
+    function markError(name) {
+      const el = $("#emailForm").elements[name];
+      if (el) el.closest(".field")?.classList.add("error");
+    }
+
+    function validate(data) {
+      clearErrors();
+      const errors = [];
+
+      if (drawerMode === "apply" || drawerMode === "edit") {
+        if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+          markError("email"); errors.push("邮箱地址");
+        } else if (data.email !== data.email.toLowerCase()) {
+          markError("email"); errors.push("邮箱需小写");
+        }
+        if (!data.emailType) { markError("emailType"); errors.push("邮箱类型"); }
+        if (!data.domain) { markError("domain"); errors.push("所属域名"); }
+        if (!data.owner) { markError("owner"); errors.push("使用人1"); }
+        if (!data.forPlatform) { markError("forPlatform"); errors.push("是否用于平台注册"); }
+        if (data.forPlatform === "是") {
+          if (!data.platform) { markError("platform"); errors.push("绑定平台"); }
+          if (!data.site) { markError("site"); errors.push("绑定站点"); }
+          if (!data.store) { markError("store"); errors.push("绑定店铺"); }
+          if (!data.storeId) { markError("storeId"); errors.push("店铺 ID"); }
+        }
+      }
+
+      if (drawerMode === "confirm" || drawerMode === "maintain") {
+        if (!data.provider) { markError("provider"); errors.push("邮箱服务商"); }
+        if (!data.openDate) { markError("openDate"); errors.push("开通日期"); }
+      }
+
+      if (errors.length) {
+        const box = $("#formError");
+        box.textContent = `请完善：${errors.join("、")}`;
+        box.classList.add("show");
+        return false;
+      }
+      return true;
+    }
+
+    function saveRecord() {
+      const data = getFormData();
+      if (!validate(data)) return;
+
+      const user = USERS[role];
+      const now = nowDateTime();
+      data.email = data.email.toLowerCase();
+      data.maintainer = user.name;
+      data.updatedAt = now;
+      if (!data.department) data.department = user.dept;
+
+      if (editingId) {
+        const idx = records.findIndex(r => r.id === editingId);
+        if (idx < 0) return;
+        const prev = records[idx];
+        const merged = { ...prev };
+        if (drawerMode === "confirm") {
+          Object.assign(merged, {
+            provider: data.provider, openDate: data.openDate,
+            closeDate: data.closeDate, status: data.status || "正常", billing: data.billing,
+            confirmOpenAt: data.confirmOpenAt || now,
+            applyStatus: "已开通", risk: data.risk, remark: data.remark,
+            maintainer: data.maintainer, updatedAt: data.updatedAt
+          });
+        } else if (drawerMode === "maintain") {
+          Object.assign(merged, {
+            provider: data.provider, openDate: data.openDate,
+            closeDate: data.closeDate, status: data.status || "正常", billing: data.billing,
+            confirmOpenAt: data.confirmOpenAt || prev.confirmOpenAt || now,
+            applyStatus: data.applyStatus || prev.applyStatus,
+            risk: data.risk, remark: data.remark,
+            forPlatform: data.forPlatform,
+            platform: data.forPlatform === "是" ? data.platform : "",
+            site: data.forPlatform === "是" ? data.site : "",
+            store: data.forPlatform === "是" ? data.store : "",
+            storeId: data.forPlatform === "是" ? data.storeId : "",
+            email: data.email, emailType: data.emailType, domain: data.domain,
+            owner: data.owner || prev.owner,
+            department: data.department || prev.department,
+            maintainer: data.maintainer, updatedAt: data.updatedAt
+          });
+        } else if (drawerMode === "edit") {
+          // 编辑：与申请注册相同字段，回写并保留其余台账信息
+          const domainInfo = DOMAIN_MAP[data.domain] || {};
+          Object.assign(merged, {
+            email: data.email,
+            emailType: data.emailType,
+            domain: data.domain,
+            owner: data.owner || domainInfo.owner || merged.owner,
+            department: data.department || domainInfo.department || merged.department,
+            forPlatform: data.forPlatform,
+            platform: data.forPlatform === "是" ? data.platform : "",
+            site: data.forPlatform === "是" ? data.site : "",
+            store: data.forPlatform === "是" ? data.store : "",
+            storeId: data.forPlatform === "是" ? data.storeId : "",
+            maintainer: data.maintainer,
+            updatedAt: data.updatedAt
+          });
+        } else {
+          Object.assign(merged, {
+            email: data.email, emailType: data.emailType, domain: data.domain,
+            owner: data.owner, department: data.department,
+            forPlatform: data.forPlatform,
+            platform: data.forPlatform === "是" ? data.platform : "",
+            site: data.forPlatform === "是" ? data.site : "",
+            store: data.forPlatform === "是" ? data.store : "",
+            storeId: data.forPlatform === "是" ? data.storeId : "",
+            provider: data.provider, openDate: data.openDate,
+            closeDate: data.closeDate, status: data.status, billing: data.billing,
+            confirmOpenAt: data.confirmOpenAt,
+            applyStatus: data.applyStatus, risk: data.risk, remark: data.remark,
+            deptReviewer: data.deptReviewer, deptReviewAt: data.deptReviewAt,
+            rejectRemark: data.rejectRemark,
+            maintainer: data.maintainer, updatedAt: data.updatedAt
+          });
+        }
+        // 创建人 / 创建时间保持不变
+        merged.creator = prev.creator || merged.creator;
+        merged.createdAt = prev.createdAt || merged.createdAt;
+        records[idx] = merged;
+        toast(drawerMode === "confirm" ? "已确认开通" : drawerMode === "maintain" ? "已保存" : "已保存更新");
+      } else {
+        const id = String(Date.now());
+        const emailId = generateEmailId();
+        const domainInfo = DOMAIN_MAP[data.domain] || {};
+        const rec = {
+          id, ...data, emailId,
+          creator: USERS.applicant.name,
+          createdAt: now,
+          updatedAt: now,
+          owner: data.owner || domainInfo.owner || "",
+          department: data.department || domainInfo.department || "",
+          applyStatus: "待部门审核",
+          status: "",
+          platform: data.forPlatform === "是" ? data.platform : "",
+          site: data.forPlatform === "是" ? data.site : "",
+          store: data.forPlatform === "是" ? data.store : "",
+          storeId: data.forPlatform === "是" ? data.storeId : "",
+          provider: "",
+          openDate: "",
+          closeDate: "",
+          billing: "",
+          confirmOpenAt: "",
+          risk: "",
+          remark: "",
+          deptReviewer: "",
+          deptReviewAt: "",
+          rejectRemark: ""
+        };
+        records.unshift(rec);
+        toast(`已提交申请 ${emailId}`);
+      }
+
+      saveStore();
+      renderTable();
+      closeDrawer();
+    }
+
+    function deleteSelected() {
+      if (role !== "admin" || selectedIds.size === 0) return;
+      if (!confirm(`确认删除选中的 ${selectedIds.size} 条记录？`)) return;
+      records = records.filter(r => !selectedIds.has(r.id));
+      selectedIds.clear();
+      saveStore();
+      renderTable();
+      toast("已删除");
+    }
+
+    function renderDict() {
+      $("#dictBody").innerHTML = DICT.map(row => {
+        const p = row[8];
+        const cls = p === "P0" ? "p0" : p === "P1" ? "p1" : "p2";
+        return `<tr>${row.map((c, i) =>
+          i === 8 ? `<td><span class="${cls}">${c}</span></td>` : `<td>${escapeHtml(c)}</td>`
+        ).join("")}</tr>`;
+      }).join("");
+    }
+
+    // Events
+    $("#btnSearch").addEventListener("click", applyQuery);
+    $("#btnClear").addEventListener("click", clearQuery);
+    $("#searchInput").addEventListener("keydown", e => { if (e.key === "Enter") applyQuery(); });
+    $("#dateRangeBox").addEventListener("click", () => {
+      syncDateRangeUI(true);
+      ($("#dateFrom").value ? $("#dateTo") : $("#dateFrom")).focus();
+    });
+    $("#dateFrom").addEventListener("change", () => syncDateRangeUI());
+    $("#dateTo").addEventListener("change", () => syncDateRangeUI());
+    $("#dateFrom").addEventListener("blur", () => setTimeout(() => syncDateRangeUI(), 150));
+    $("#dateTo").addEventListener("blur", () => setTimeout(() => syncDateRangeUI(), 150));
+    syncDateRangeUI();
+    let reviewId = null;
+
+    function syncReviewRemarkRequired() {
+      const selected = document.querySelector("input[name='reviewAuditResult']:checked");
+      const reject = selected && selected.value === "驳回";
+      const label = $("#reviewRemarkLabel");
+      if (label) {
+        label.innerHTML = reject
+          ? `<span class="req">*</span>驳回备注`
+          : `驳回备注`;
+      }
+      const ta = $("#reviewRejectRemark");
+      if (ta) ta.placeholder = reject ? "驳回时必填" : "通过时可空";
+      $("#reviewRemarkRow")?.classList.remove("error");
+      $("#reviewResultRow")?.classList.remove("error");
+    }
+
+    function openReviewModal(id) {
+      reviewId = id;
+      const passRadio = document.querySelector("input[name='reviewAuditResult'][value='通过']");
+      if (passRadio) passRadio.checked = true;
+      $("#reviewRejectRemark").value = "";
+      $("#reviewResultRow")?.classList.remove("error");
+      $("#reviewRemarkRow")?.classList.remove("error");
+      syncReviewRemarkRequired();
+      $("#reviewOverlay").classList.add("open");
+    }
+
+    function closeReviewModal() {
+      $("#reviewOverlay").classList.remove("open");
+      reviewId = null;
+      $("#reviewRejectRemark").value = "";
+    }
+
+    function saveReview() {
+      const selected = document.querySelector("input[name='reviewAuditResult']:checked");
+      if (!selected) {
+        $("#reviewResultRow")?.classList.add("error");
+        toast("请选择审核结果", "err");
+        return;
+      }
+      const passed = selected.value === "通过";
+      const comment = ($("#reviewRejectRemark").value || "").trim();
+      if (!passed && !comment) {
+        $("#reviewRemarkRow")?.classList.add("error");
+        toast("驳回时请填写驳回备注", "err");
+        return;
+      }
+      $("#reviewResultRow")?.classList.remove("error");
+      $("#reviewRemarkRow")?.classList.remove("error");
+      const idx = records.findIndex(r => r.id === reviewId);
+      if (idx < 0) return;
+      const prev = records[idx];
+      const now = nowDateTime();
+      records[idx] = {
+        ...prev,
+        applyStatus: passed ? "已开通" : "已驳回",
+        status: passed ? (prev.status || "正常") : prev.status,
+        deptReviewer: USERS.admin.name || prev.deptReviewer || "王主管",
+        deptReviewAt: today(),
+        rejectRemark: passed ? (prev.rejectRemark || "") : comment,
+        maintainer: USERS.admin.name,
+        updatedAt: now
+      };
+      saveStore();
+      closeReviewModal();
+      selectedIds.clear();
+      renderTable();
+      updateToolbar();
+      toast(passed ? "审核通过，已进入邮箱管理" : "已驳回");
+    }
+
+    $("#btnApply").addEventListener("click", () => openDrawer(null, "apply"));
+    $("#btnReview").addEventListener("click", () => {
+      if (selectedIds.size !== 1) {
+        toast(selectedIds.size === 0 ? "请先勾选一条待部门审核记录" : "部门审核仅支持勾选一条记录", "err");
+        return;
+      }
+      const id = [...selectedIds][0];
+      const rec = records.find(r => r.id === id);
+      if (!rec) return;
+      if (rec.applyStatus !== "待部门审核") {
+        toast("仅「待部门审核」状态可进行部门审核", "err");
+        return;
+      }
+      openReviewModal(id);
+    });
+    $("#btnReviewCancel").addEventListener("click", closeReviewModal);
+    $("#btnReviewOk").addEventListener("click", saveReview);
+    $("#reviewOverlay").addEventListener("click", e => {
+      if (e.target === $("#reviewOverlay")) closeReviewModal();
+    });
+    $$("input[name='reviewAuditResult']").forEach(r => {
+      r.addEventListener("change", syncReviewRemarkRequired);
+    });
+    $("#menuTabs").addEventListener("click", e => {
+      const tab = e.target.closest(".menu-tab");
+      if (!tab) return;
+      const app = tab.dataset.app || "email";
+      const menu = tab.dataset.menu || "register";
+      if (app === currentApp && menu === currentMenu) return;
+      switchApp(app, menu);
+    });
+
+    window.addEventListener("message", e => {
+      if (e.data && e.data.type === "domainReady" && currentApp === "domain") {
+        postDomainMenu(currentMenu);
+      }
+    });
+    $("#btnEdit").addEventListener("click", () => {
+      if (selectedIds.size !== 1) {
+        toast(selectedIds.size === 0 ? "请先勾选一条记录" : "编辑仅支持勾选一条记录", "err");
+        return;
+      }
+      openDrawer([...selectedIds][0], "edit");
+    });
+    $("#btnManageEdit").addEventListener("click", () => {
+      if (selectedIds.size !== 1) {
+        toast(selectedIds.size === 0 ? "请先勾选一条记录" : "编辑仅支持勾选一条记录", "err");
+        return;
+      }
+      openDrawer([...selectedIds][0], "maintain");
+    });
+    $("#btnBatchDelete").addEventListener("click", () => {
+      if (selectedIds.size === 0) {
+        toast("请先勾选要删除的记录", "err");
+        return;
+      }
+      deleteSelected();
+    });
+    $("#btnImport").addEventListener("click", () => toast("原型示意：导入功能待接入", "ok"));
+    $("#btnExport").addEventListener("click", () => toast("原型示意：已导出当前筛选结果", "ok"));
+    $("#btnManageImport").addEventListener("click", () => toast("原型示意：导入功能待接入", "ok"));
+    $("#btnManageExport").addEventListener("click", () => toast("原型示意：已导出当前筛选结果", "ok"));
+
+    let pendingImportRows = [];
+
+    function openImportConfirm() {
+      pendingImportRows = [];
+      $("#btnImportDo").disabled = true;
+      $("#importPreview").style.display = "none";
+      $("#importPreview").innerHTML = "";
+      $("#importConfirmFile").value = "";
+      $("#importOverlay").classList.add("open");
+    }
+    function closeImportConfirm() {
+      $("#importOverlay").classList.remove("open");
+      pendingImportRows = [];
+    }
+
+    function parseCsvText(text) {
+      const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (!lines.length) return [];
+      const split = (line) => {
+        // 简单 CSV：按逗号拆分，去掉首尾引号
+        return line.split(",").map(c => c.trim().replace(/^"|"$/g, ""));
+      };
+      const header = split(lines[0]).map(h => h.toLowerCase());
+      const hasHeader = header.some(h => h.includes("邮箱") || h.includes("email"));
+      const rows = [];
+      const start = hasHeader ? 1 : 0;
+      const idx = (keys, fallback) => {
+        for (const k of keys) {
+          const i = header.findIndex(h => h.includes(k));
+          if (i >= 0) return i;
+        }
+        return fallback;
+      };
+      const iEmail = hasHeader ? idx(["邮箱", "email"], 0) : 0;
+      const iConfirm = hasHeader ? idx(["确认开通", "confirm"], 1) : 1;
+      const iProvider = hasHeader ? idx(["服务商", "provider"], 2) : 2;
+      const iOpen = hasHeader ? idx(["开通日期", "opendate", "open"], 3) : 3;
+      const iBilling = hasHeader ? idx(["收费", "billing"], 4) : 4;
+
+      for (let i = start; i < lines.length; i++) {
+        const cols = split(lines[i]);
+        const email = (cols[iEmail] || "").toLowerCase();
+        if (!email || !email.includes("@")) continue;
+        rows.push({
+          email,
+          confirmOpenAt: cols[iConfirm] || nowDateTime(),
+          provider: cols[iProvider] || "",
+          openDate: cols[iOpen] || datePart(cols[iConfirm] || "") || today(),
+          billing: cols[iBilling] || ""
+        });
+      }
+      return rows;
+    }
+
+    function previewImportRows(rows) {
+      const box = $("#importPreview");
+      if (!rows.length) {
+        box.style.display = "block";
+        box.innerHTML = "<span style='color:var(--danger)'>未解析到有效邮箱行，请检查 CSV 格式</span>";
+        $("#btnImportDo").disabled = true;
+        pendingImportRows = [];
+        return;
+      }
+      const matched = [];
+      const unmatched = [];
+      const invalid = [];
+      rows.forEach(row => {
+        const rec = records.find(r => r.email === row.email);
+        if (!rec) unmatched.push(row.email);
+        else if (rec.applyStatus !== "待开通") invalid.push(`${row.email}（当前：${rec.applyStatus || "未设置"}）`);
+        else matched.push(row);
+      });
+      pendingImportRows = matched;
+      $("#btnImportDo").disabled = matched.length === 0;
+      box.style.display = "block";
+      box.innerHTML = `
+        <div>可确认开通：<b style="color:var(--success)">${matched.length}</b> 条</div>
+        ${matched.length ? `<div style="margin-top:6px">${matched.map(r => escapeHtml(r.email)).join("<br>")}</div>` : ""}
+        ${invalid.length ? `<div style="margin-top:8px;color:var(--warn)">状态不符（需待开通）：${invalid.map(escapeHtml).join("；")}</div>` : ""}
+        ${unmatched.length ? `<div style="margin-top:8px;color:var(--danger)">未找到邮箱：${unmatched.map(escapeHtml).join("；")}</div>` : ""}
+      `;
+    }
+
+    function doImportConfirm() {
+      if (!pendingImportRows.length) return;
+      const now = nowDateTime();
+      let n = 0;
+      pendingImportRows.forEach(row => {
+        const idx = records.findIndex(r => r.email === row.email && r.applyStatus === "待开通");
+        if (idx < 0) return;
+        const prev = records[idx];
+        records[idx] = {
+          ...prev,
+          applyStatus: "已开通",
+          status: prev.status || "正常",
+          confirmOpenAt: fromDatetimeLocal(row.confirmOpenAt.replace("T", " ")) || now,
+          provider: row.provider || prev.provider,
+          openDate: row.openDate || prev.openDate,
+          billing: row.billing || prev.billing,
+          maintainer: USERS.admin.name,
+          updatedAt: now
+        };
+        n += 1;
+      });
+      saveStore();
+      renderTable();
+      closeImportConfirm();
+      toast(n ? `已导入确认开通 ${n} 条` : "没有可开通的记录", n ? "ok" : "err");
+    }
+
+    $("#btnClose").addEventListener("click", closeDrawer);
+    $("#btnCancel").addEventListener("click", closeDrawer);
+    $("#btnSave").addEventListener("click", saveRecord);
+    $("#forPlatform").addEventListener("change", togglePlatformFields);
+    $("#domainSelect").addEventListener("change", syncDomainFields);
+
+    function openRecordFromList(id) {
+      openDrawer(id, currentMenu === "manage" ? "maintain" : "edit");
+    }
+
+    $("#listTable").addEventListener("change", e => {
+      if (e.target && e.target.id === "checkAll") {
+        const list = filteredRecords();
+        if (e.target.checked) list.forEach(r => selectedIds.add(r.id));
+        else list.forEach(r => selectedIds.delete(r.id));
+        renderTable();
+      }
+    });
+
+    $("#listTable").addEventListener("click", e => {
+      const editBtn = e.target.closest(".action-link[data-action='edit']");
+      if (editBtn) {
+        openRecordFromList(editBtn.dataset.id);
+        return;
+      }
+      const link = e.target.closest(".v-link[data-action='open']");
+      if (link) {
+        openRecordFromList(link.dataset.id);
+        return;
+      }
+      const check = e.target.closest(".row-check");
+      if (check) {
+        const id = check.dataset.id;
+        if (check.checked) selectedIds.add(id);
+        else selectedIds.delete(id);
+        const tr = check.closest("tr");
+        tr.classList.toggle("selected", check.checked);
+        updateToolbar();
+        const list = filteredRecords();
+        const checkAll = $("#checkAll");
+        if (checkAll) checkAll.checked = list.length > 0 && list.every(r => selectedIds.has(r.id));
+      }
+    });
+
+    $("#listTable").addEventListener("dblclick", e => {
+      const tr = e.target.closest("tr[data-id]");
+      if (tr && !e.target.closest("input,button")) openRecordFromList(tr.dataset.id);
+    });
+
+    $("#overlay").addEventListener("click", e => {
+      if (e.target === $("#overlay")) closeDrawer();
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
+        if ($("#reviewOverlay").classList.contains("open")) closeReviewModal();
+        else if ($("#overlay").classList.contains("open")) closeDrawer();
+      }
+    });
+
+    load();
+    switchApp("brand", "register");
+    setRole("admin");
   </script>
 </body>
 </html>
